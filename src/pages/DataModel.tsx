@@ -2,6 +2,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Database, GitBranch, Table } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import DataModelDiagram from "@/components/DataModelDiagram";
+import { useSearchParams } from "react-router-dom";
 
 const factTable = {
   name: "fact_sales_promotions",
@@ -61,15 +64,23 @@ const dimensionTables = [
 ];
 
 export default function DataModel() {
+  const [searchParams] = useSearchParams();
+  const pipelineId = searchParams.get('pipeline');
+
   return (
     <div className="space-y-8">
       <div>
         <h2 className="text-3xl font-bold mb-2">Data Model - Star Schema</h2>
-        <p className="text-muted-foreground">Automatically generated fact and dimension tables from your XML data</p>
+        <p className="text-muted-foreground">
+          {pipelineId 
+            ? `Generated from Pipeline #${pipelineId} - Campaign Analysis Pipeline` 
+            : "Automatically generated fact and dimension tables from your XML data"
+          }
+        </p>
       </div>
 
       {/* Schema Type */}
-      <Card className="shadow-card border-border bg-gradient-card">
+      <Card className="shadow-card border-border">
         <CardContent className="p-6">
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center">
@@ -86,6 +97,26 @@ export default function DataModel() {
         </CardContent>
       </Card>
 
+      {/* Interactive Diagram & Table View */}
+      <Tabs defaultValue="diagram" className="w-full">
+        <TabsList>
+          <TabsTrigger value="diagram">Interactive Diagram</TabsTrigger>
+          <TabsTrigger value="tables">Table Details</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="diagram" className="mt-6">
+          <Card className="shadow-card border-border">
+            <CardHeader>
+              <CardTitle>Star Schema Architecture</CardTitle>
+              <CardDescription>Interactive visualization of fact and dimension tables with relationships</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <DataModelDiagram />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="tables" className="mt-6 space-y-6">
       {/* Fact Table */}
       <Card className="shadow-card border-border">
         <CardHeader>
@@ -176,6 +207,8 @@ export default function DataModel() {
           </Card>
         ))}
       </div>
+        </TabsContent>
+      </Tabs>
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

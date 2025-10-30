@@ -80,12 +80,12 @@ validation:
   schema_validation: true
   data_quality_threshold: 95`;
 
-export default function PySparkPipeline() {
+export default function BuildPipeline() {
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-3xl font-bold mb-2">PySpark ETL Pipeline</h2>
-        <p className="text-muted-foreground">Configure and manage your data processing pipeline</p>
+        <h2 className="text-3xl font-bold mb-2">Build Data Pipeline</h2>
+        <p className="text-muted-foreground">Dynamically generated PySpark code based on your data model structure</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -98,7 +98,7 @@ export default function PySparkPipeline() {
           <CardContent className="space-y-3">
             <Button className="w-full" size="lg">
               <Play className="w-4 h-4 mr-2" />
-              Run Pipeline
+              Deploy Pipeline
             </Button>
             <Button variant="outline" className="w-full">
               <Download className="w-4 h-4 mr-2" />

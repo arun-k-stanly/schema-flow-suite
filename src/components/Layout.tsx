@@ -8,19 +8,19 @@ import {
   PlayCircle, 
   CheckCircle2, 
   BarChart3,
-  Shield,
+  FolderOpen,
   Home
 } from "lucide-react";
 
 const navigationItems = [
   { path: "/", icon: Home, label: "Dashboard" },
+  { path: "/projects", icon: FolderOpen, label: "Projects" },
   { path: "/upload", icon: FileText, label: "Upload XSD" },
   { path: "/generate-xml", icon: FileCode, label: "Generate XML" },
   { path: "/data-model", icon: Database, label: "Data Model" },
-  { path: "/pyspark", icon: GitBranch, label: "PySpark Pipeline" },
+  { path: "/build-pipeline", icon: GitBranch, label: "Build Pipeline" },
   { path: "/execution", icon: PlayCircle, label: "Execution" },
   { path: "/validation", icon: CheckCircle2, label: "Validation" },
-  { path: "/quality", icon: Shield, label: "Data Quality" },
   { path: "/analytics", icon: BarChart3, label: "Analytics" },
 ];
 
