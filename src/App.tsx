@@ -24,6 +24,14 @@ const App = () => (
             <Route path="/projects" element={<Projects />} />
             <Route path="/project/:projectId" element={<ProjectDetail />} />
             <Route path="/project/:projectId/pipeline/:pipelineId" element={<PipelineWorkflow />} />
+            {/* Redirects from old routes to new structure */}
+            <Route path="/upload" element={<Projects />} />
+            <Route path="/generate-xml" element={<Projects />} />
+            <Route path="/data-model" element={<Projects />} />
+            <Route path="/build-pipeline" element={<Projects />} />
+            <Route path="/execution" element={<Projects />} />
+            <Route path="/validation" element={<Projects />} />
+            <Route path="/analytics" element={<Projects />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
