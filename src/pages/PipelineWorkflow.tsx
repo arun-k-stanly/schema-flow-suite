@@ -7,18 +7,14 @@ import UploadXSD from "./UploadXSD";
 import GenerateXML from "./GenerateXML";
 import DataModel from "./DataModel";
 import BuildPipeline from "./BuildPipeline";
-import Execution from "./Execution";
-import ValidationNew from "./ValidationNew";
-import Analytics from "./Analytics";
+import TestPipeline from "./TestPipeline";
 
 const workflowSteps = [
   { id: "upload", label: "Upload XSD", icon: FileText, component: UploadXSD },
   { id: "generate", label: "Generate XML", icon: FileCode, component: GenerateXML },
   { id: "model", label: "Data Model", icon: Database, component: DataModel },
   { id: "build", label: "Build Pipeline", icon: GitBranch, component: BuildPipeline },
-  { id: "execute", label: "Execution", icon: PlayCircle, component: Execution },
-  { id: "validation", label: "Validation", icon: CheckCircle2, component: ValidationNew },
-  { id: "analytics", label: "Analytics", icon: BarChart3, component: Analytics },
+  { id: "test", label: "Test Pipeline", icon: PlayCircle, component: TestPipeline },
 ];
 
 export default function PipelineWorkflow() {

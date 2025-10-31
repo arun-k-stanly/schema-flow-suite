@@ -1,8 +1,9 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Plus, Play, Settings, Trash2 } from "lucide-react";
+import { ArrowLeft, Plus, Settings, Trash2, PlayCircle, CheckCircle2, BarChart3 } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const pipelines = [
   {
@@ -94,6 +95,48 @@ export default function ProjectDetail() {
                       Open Pipeline
                     </Link>
                   </Button>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="outline" size="icon" asChild>
+                          <Link to={`/project/${projectId}/pipeline/${pipeline.id}/execution`}>
+                            <PlayCircle className="w-4 h-4" />
+                          </Link>
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Execution</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="outline" size="icon" asChild>
+                          <Link to={`/project/${projectId}/pipeline/${pipeline.id}/validation`}>
+                            <CheckCircle2 className="w-4 h-4" />
+                          </Link>
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Validation</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="outline" size="icon" asChild>
+                          <Link to={`/project/${projectId}/pipeline/${pipeline.id}/analytics`}>
+                            <BarChart3 className="w-4 h-4" />
+                          </Link>
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Analytics</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                   <Button variant="outline" size="icon">
                     <Settings className="w-4 h-4" />
                   </Button>
