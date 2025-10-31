@@ -2,12 +2,13 @@ import { useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, FileText, FileCode, Database, GitBranch, PlayCircle, CheckCircle2, BarChart3 } from "lucide-react";
+import { ArrowLeft, FileText, FileCode, Database, GitBranch, PlayCircle, Rocket } from "lucide-react";
 import UploadXSD from "./UploadXSD";
 import GenerateXML from "./GenerateXML";
 import DataModel from "./DataModel";
 import BuildPipeline from "./BuildPipeline";
 import TestPipeline from "./TestPipeline";
+import DeployPipeline from "./DeployPipeline";
 
 const workflowSteps = [
   { id: "upload", label: "Upload XSD", icon: FileText, component: UploadXSD },
@@ -15,6 +16,7 @@ const workflowSteps = [
   { id: "model", label: "Data Model", icon: Database, component: DataModel },
   { id: "build", label: "Build Pipeline", icon: GitBranch, component: BuildPipeline },
   { id: "test", label: "Test Pipeline", icon: PlayCircle, component: TestPipeline },
+  { id: "deploy", label: "Deploy Pipeline", icon: Rocket, component: DeployPipeline },
 ];
 
 export default function PipelineWorkflow() {

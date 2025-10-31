@@ -91,24 +91,16 @@ export default function ProjectDetail() {
                 </div>
                 <div className="flex gap-2">
                   <Button size="lg" asChild>
+                    <Link to={`/project/${projectId}/pipeline/${pipeline.id}/execution`}>
+                      <PlayCircle className="w-4 h-4 mr-2" />
+                      Execute Pipeline
+                    </Link>
+                  </Button>
+                  <Button variant="outline" asChild>
                     <Link to={`/project/${projectId}/pipeline/${pipeline.id}`}>
                       Open Pipeline
                     </Link>
                   </Button>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button variant="outline" size="icon" asChild>
-                          <Link to={`/project/${projectId}/pipeline/${pipeline.id}/execution`}>
-                            <PlayCircle className="w-4 h-4" />
-                          </Link>
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Execution</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
