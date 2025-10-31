@@ -15,13 +15,6 @@ import {
 const navigationItems = [
   { path: "/", icon: Home, label: "Dashboard" },
   { path: "/projects", icon: FolderOpen, label: "Projects" },
-  { path: "/upload", icon: FileText, label: "Upload XSD" },
-  { path: "/generate-xml", icon: FileCode, label: "Generate XML" },
-  { path: "/data-model", icon: Database, label: "Data Model" },
-  { path: "/build-pipeline", icon: GitBranch, label: "Build Pipeline" },
-  { path: "/execution", icon: PlayCircle, label: "Execution" },
-  { path: "/validation", icon: CheckCircle2, label: "Validation" },
-  { path: "/analytics", icon: BarChart3, label: "Analytics" },
 ];
 
 export const Layout = ({ children }: { children: React.ReactNode }) => {

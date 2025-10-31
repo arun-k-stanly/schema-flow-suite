@@ -49,9 +49,11 @@ export default function ProjectDetail() {
           <h2 className="text-3xl font-bold mb-2">Sales Promotion Analytics</h2>
           <p className="text-muted-foreground">End-to-end sales promotion data pipeline</p>
         </div>
-        <Button size="lg">
-          <Plus className="w-4 h-4 mr-2" />
-          New Pipeline
+        <Button size="lg" asChild>
+          <Link to={`/project/${projectId}/pipeline/new`}>
+            <Plus className="w-4 h-4 mr-2" />
+            New Pipeline
+          </Link>
         </Button>
       </div>
 
@@ -88,12 +90,9 @@ export default function ProjectDetail() {
                 </div>
                 <div className="flex gap-2">
                   <Button size="lg" asChild>
-                    <Link to={`/data-model?pipeline=${pipeline.id}`}>
-                      Select Pipeline
+                    <Link to={`/project/${projectId}/pipeline/${pipeline.id}`}>
+                      Open Pipeline
                     </Link>
-                  </Button>
-                  <Button variant="outline" size="icon">
-                    <Play className="w-4 h-4" />
                   </Button>
                   <Button variant="outline" size="icon">
                     <Settings className="w-4 h-4" />
