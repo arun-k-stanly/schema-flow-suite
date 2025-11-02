@@ -43,6 +43,22 @@ const qualityIssues = [
   { table: "dim_campaign", column: "end_date", issue: "Future Dates", count: 5, severity: "medium" },
 ];
 
+const sourceTargetTests = [
+  { id: "ST-001", name: "Row count matches per table", scope: "Table-Level", assertion: "source_rows == target_rows", status: "pass", severity: "high" },
+  { id: "ST-002", name: "Schema type compatibility", scope: "Column-Level", assertion: "source_type ~ target_type", status: "pass", severity: "medium" },
+  { id: "ST-003", name: "Primary key uniqueness", scope: "Fact Table", assertion: "COUNT(*) == COUNT(DISTINCT pk)", status: "pass", severity: "high" },
+  { id: "ST-004", name: "Foreign key integrity", scope: "Fact -> Dimensions", assertion: "FKs present in corresponding dimensions", status: "pass", severity: "high" },
+  { id: "ST-005", name: "Critical column non-null", scope: "Fact Table", assertion: "revenue, quantity NOT NULL", status: "warning", severity: "medium" },
+];
+
+const dqTests = [
+  { id: "DQ-001", name: "Completeness >= 98%", dimension: "Completeness", assertion: ">= 98%", status: "pass", severity: "high" },
+  { id: "DQ-002", name: "Accuracy >= 99%", dimension: "Accuracy", assertion: ">= 99%", status: "pass", severity: "high" },
+  { id: "DQ-003", name: "Email format valid", dimension: "Validity", assertion: "email matches RFC5322", status: "warning", severity: "medium" },
+  { id: "DQ-004", name: "Price non-negative", dimension: "Validity", assertion: "price >= 0", status: "pass", severity: "high" },
+  { id: "DQ-005", name: "No duplicate transaction_id", dimension: "Uniqueness", assertion: "COUNT == COUNT(DISTINCT)", status: "pass", severity: "high" },
+];
+
 export default function ValidationNew() {
   return (
     <div className="space-y-8">
@@ -210,6 +226,52 @@ export default function ValidationNew() {
           </Card>
         </TabsContent>
 
+        {/* Source-to-Target: Test Cases */}
+        <TabsContent value="source-target" className="space-y-6 mt-0">
+          <Card className="shadow-card border-border">
+            <CardHeader>
+              <CardTitle>Validation Test Cases</CardTitle>
+              <CardDescription>Executable checks that produced the results above</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-border">
+                      <th className="text-left p-3 text-sm font-medium text-muted-foreground">ID</th>
+                      <th className="text-left p-3 text-sm font-medium text-muted-foreground">Test Case</th>
+                      <th className="text-left p-3 text-sm font-medium text-muted-foreground">Scope</th>
+                      <th className="text-left p-3 text-sm font-medium text-muted-foreground">Assertion</th>
+                      <th className="text-center p-3 text-sm font-medium text-muted-foreground">Status</th>
+                      <th className="text-center p-3 text-sm font-medium text-muted-foreground">Severity</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sourceTargetTests.map((t) => (
+                      <tr key={t.id} className="border-b border-border/50 hover:bg-muted/50">
+                        <td className="p-3 font-mono text-xs">{t.id}</td>
+                        <td className="p-3 text-sm">{t.name}</td>
+                        <td className="p-3 text-sm text-muted-foreground">{t.scope}</td>
+                        <td className="p-3 text-xs font-mono">{t.assertion}</td>
+                        <td className="p-3 text-center">
+                          {t.status === "pass" ? (
+                            <Badge className="bg-success/20 text-success border-success/20">Pass</Badge>
+                          ) : (
+                            <Badge className="bg-warning/20 text-warning border-warning/20">Warning</Badge>
+                          )}
+                        </td>
+                        <td className="p-3 text-center">
+                          <Badge variant="outline" className="text-xs">{t.severity}</Badge>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
         {/* Data Quality Report Tab */}
         <TabsContent value="data-quality" className="space-y-6 mt-6">
           {/* Overall DQ Summary */}
@@ -293,6 +355,50 @@ export default function ValidationNew() {
                           >
                             {issue.severity}
                           </Badge>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* DQ Test Cases */}
+          <Card className="shadow-card border-border">
+            <CardHeader>
+              <CardTitle>Data Quality Test Cases</CardTitle>
+              <CardDescription>Checks supporting the quality metrics above</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-border">
+                      <th className="text-left p-3 text-sm font-medium text-muted-foreground">ID</th>
+                      <th className="text-left p-3 text-sm font-medium text-muted-foreground">Test Case</th>
+                      <th className="text-left p-3 text-sm font-medium text-muted-foreground">Dimension</th>
+                      <th className="text-left p-3 text-sm font-medium text-muted-foreground">Assertion</th>
+                      <th className="text-center p-3 text-sm font-medium text-muted-foreground">Status</th>
+                      <th className="text-center p-3 text-sm font-medium text-muted-foreground">Severity</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {dqTests.map((t) => (
+                      <tr key={t.id} className="border-b border-border/50 hover:bg-muted/50">
+                        <td className="p-3 font-mono text-xs">{t.id}</td>
+                        <td className="p-3 text-sm">{t.name}</td>
+                        <td className="p-3 text-sm text-muted-foreground">{t.dimension}</td>
+                        <td className="p-3 text-xs font-mono">{t.assertion}</td>
+                        <td className="p-3 text-center">
+                          {t.status === "pass" ? (
+                            <Badge className="bg-success/20 text-success border-success/20">Pass</Badge>
+                          ) : (
+                            <Badge className="bg-warning/20 text-warning border-warning/20">Warning</Badge>
+                          )}
+                        </td>
+                        <td className="p-3 text-center">
+                          <Badge variant="outline" className="text-xs">{t.severity}</Badge>
                         </td>
                       </tr>
                     ))}

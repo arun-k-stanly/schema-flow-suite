@@ -5,14 +5,14 @@ import { ArrowRight, CheckCircle2, Clock, AlertCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const workflowSteps = [
-  { id: 1, name: "Upload XSD", status: "completed", path: "/upload" },
-  { id: 2, name: "Generate XML", status: "completed", path: "/generate-xml" },
-  { id: 3, name: "Data Model", status: "in-progress", path: "/data-model" },
-  { id: 4, name: "PySpark Pipeline", status: "pending", path: "/pyspark" },
-  { id: 5, name: "Execution", status: "pending", path: "/execution" },
-  { id: 6, name: "Validation", status: "pending", path: "/validation" },
-  { id: 7, name: "Data Quality", status: "pending", path: "/quality" },
-  { id: 8, name: "Analytics", status: "pending", path: "/analytics" },
+  { id: 1, name: "Upload Metadata", status: "completed", path: "/project/1/pipeline/new?step=upload" },
+  { id: 2, name: "Generate Sample Data", status: "completed", path: "/project/1/pipeline/new?step=generate" },
+  { id: 3, name: "Data Model", status: "in-progress", path: "/project/1/pipeline/new?step=model" },
+  { id: 4, name: "PySpark Pipeline", status: "pending", path: "/project/1/pipeline/new?step=build" },
+  { id: 5, name: "Execution", status: "pending", path: "/project/1/pipeline/new?step=test" },
+  { id: 6, name: "Validation", status: "pending", path: "/project/1/pipeline/new?step=deploy" },
+  { id: 7, name: "Data Quality", status: "pending", path: "/project/1/pipeline/new?step=deploy" },
+  { id: 8, name: "Analytics", status: "pending", path: "/project/1/pipeline/new?step=deploy" },
 ];
 
 const recentActivities = [
@@ -35,7 +35,7 @@ export default function Dashboard() {
             End-to-end workflow from XSD to actionable analytics
           </p>
           <div className="flex gap-4">
-            <Link to="/upload">
+            <Link to="/project/1/pipeline/new">
               <Button size="lg" variant="secondary">
                 Start New Pipeline
                 <ArrowRight className="ml-2 w-4 h-4" />

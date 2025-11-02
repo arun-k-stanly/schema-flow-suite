@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useEffect, useMemo } from 'react';
 import ReactFlow, {
   Node,
   Edge,
@@ -10,180 +10,142 @@ import ReactFlow, {
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 
-const initialNodes: Node[] = [
-  {
+export type Column = { name: string; type: string; key?: string };
+export type TableModel = { name: string; columns: Column[] };
+export type StarSchemaModel = { fact: TableModel; dimensions: TableModel[] };
+
+function buildLabel(table: TableModel) {
+  return (
+    <div className="p-2">
+      <div className="font-bold text-sm mb-1">{table.name}</div>
+      <div className="text-xs space-y-0.5">
+        {table.columns.slice(0, 12).map((col, idx) => (
+          <div key={idx}>
+            {col.key === 'PK' ? '🔑 ' : col.key === 'FK' ? '🔗 ' : ''}
+            {col.name}{col.key ? ` (${col.key})` : ''}
+          </div>
+        ))}
+        {table.columns.length > 12 && (
+          <div>… {table.columns.length - 12} more</div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function generateGraphFromModel(model?: StarSchemaModel): { nodes: Node[]; edges: Edge[] } {
+  if (!model) {
+    // Fallback demo model matching the previous static example
+    const fallback: StarSchemaModel = {
+      fact: {
+        name: 'fact_sales_promotions',
+        columns: [
+          { name: 'transaction_id', key: 'PK', type: 'INTEGER' },
+          { name: 'campaign_id', key: 'FK', type: 'INTEGER' },
+          { name: 'product_id', key: 'FK', type: 'INTEGER' },
+          { name: 'customer_id', key: 'FK', type: 'INTEGER' },
+          { name: 'date_id', key: 'FK', type: 'INTEGER' },
+          { name: 'quantity', type: 'INTEGER' },
+          { name: 'revenue', type: 'DECIMAL' },
+          { name: 'discount_amount', type: 'DECIMAL' },
+        ],
+      },
+      dimensions: [
+        { name: 'dim_campaign', columns: [
+          { name: 'campaign_id', key: 'PK', type: 'INTEGER' },
+          { name: 'campaign_name', type: 'VARCHAR' },
+          { name: 'start_date', type: 'DATE' },
+          { name: 'end_date', type: 'DATE' },
+          { name: 'budget', type: 'DECIMAL' },
+          { name: 'discount_percentage', type: 'DECIMAL' },
+        ]},
+        { name: 'dim_product', columns: [
+          { name: 'product_id', key: 'PK', type: 'INTEGER' },
+          { name: 'product_name', type: 'VARCHAR' },
+          { name: 'category', type: 'VARCHAR' },
+          { name: 'price', type: 'DECIMAL' },
+        ]},
+        { name: 'dim_customer', columns: [
+          { name: 'customer_id', key: 'PK', type: 'INTEGER' },
+          { name: 'customer_name', type: 'VARCHAR' },
+          { name: 'email', type: 'VARCHAR' },
+          { name: 'segment', type: 'VARCHAR' },
+        ]},
+        { name: 'dim_date', columns: [
+          { name: 'date_id', key: 'PK', type: 'INTEGER' },
+          { name: 'full_date', type: 'DATE' },
+          { name: 'year', type: 'INTEGER' },
+          { name: 'quarter', type: 'INTEGER' },
+          { name: 'month', type: 'INTEGER' },
+        ]},
+      ],
+    };
+    model = fallback;
+  }
+
+  const nodes: Node[] = [];
+  const edges: Edge[] = [];
+
+  // Fact node centered
+  nodes.push({
     id: 'fact',
     type: 'default',
     position: { x: 400, y: 200 },
-    data: { 
-      label: (
-        <div className="p-2">
-          <div className="font-bold text-sm mb-1">fact_sales_promotions</div>
-          <div className="text-xs space-y-0.5">
-            <div>🔑 transaction_id (PK)</div>
-            <div>🔗 campaign_id (FK)</div>
-            <div>🔗 product_id (FK)</div>
-            <div>🔗 customer_id (FK)</div>
-            <div>🔗 date_id (FK)</div>
-            <div>quantity</div>
-            <div>revenue</div>
-            <div>discount_amount</div>
-          </div>
-        </div>
-      )
-    },
+    data: { label: buildLabel(model.fact) },
     style: {
       background: 'hsl(var(--primary))',
       color: 'hsl(var(--primary-foreground))',
       border: '2px solid hsl(var(--primary))',
       borderRadius: '8px',
       padding: '10px',
-      width: 220,
+      width: 260,
     },
-  },
-  {
-    id: 'dim_campaign',
-    type: 'default',
-    position: { x: 100, y: 50 },
-    data: { 
-      label: (
-        <div className="p-2">
-          <div className="font-bold text-sm mb-1">dim_campaign</div>
-          <div className="text-xs space-y-0.5">
-            <div>🔑 campaign_id (PK)</div>
-            <div>campaign_name</div>
-            <div>start_date</div>
-            <div>end_date</div>
-            <div>budget</div>
-            <div>discount_percentage</div>
-          </div>
-        </div>
-      )
-    },
-    style: {
-      background: 'hsl(var(--secondary))',
-      color: 'hsl(var(--secondary-foreground))',
-      border: '2px solid hsl(var(--secondary))',
-      borderRadius: '8px',
-      padding: '10px',
-      width: 180,
-    },
-  },
-  {
-    id: 'dim_product',
-    type: 'default',
-    position: { x: 700, y: 50 },
-    data: { 
-      label: (
-        <div className="p-2">
-          <div className="font-bold text-sm mb-1">dim_product</div>
-          <div className="text-xs space-y-0.5">
-            <div>🔑 product_id (PK)</div>
-            <div>product_name</div>
-            <div>category</div>
-            <div>price</div>
-          </div>
-        </div>
-      )
-    },
-    style: {
-      background: 'hsl(var(--secondary))',
-      color: 'hsl(var(--secondary-foreground))',
-      border: '2px solid hsl(var(--secondary))',
-      borderRadius: '8px',
-      padding: '10px',
-      width: 160,
-    },
-  },
-  {
-    id: 'dim_customer',
-    type: 'default',
-    position: { x: 100, y: 400 },
-    data: { 
-      label: (
-        <div className="p-2">
-          <div className="font-bold text-sm mb-1">dim_customer</div>
-          <div className="text-xs space-y-0.5">
-            <div>🔑 customer_id (PK)</div>
-            <div>customer_name</div>
-            <div>email</div>
-            <div>segment</div>
-          </div>
-        </div>
-      )
-    },
-    style: {
-      background: 'hsl(var(--secondary))',
-      color: 'hsl(var(--secondary-foreground))',
-      border: '2px solid hsl(var(--secondary))',
-      borderRadius: '8px',
-      padding: '10px',
-      width: 160,
-    },
-  },
-  {
-    id: 'dim_date',
-    type: 'default',
-    position: { x: 700, y: 400 },
-    data: { 
-      label: (
-        <div className="p-2">
-          <div className="font-bold text-sm mb-1">dim_date</div>
-          <div className="text-xs space-y-0.5">
-            <div>🔑 date_id (PK)</div>
-            <div>full_date</div>
-            <div>year</div>
-            <div>quarter</div>
-            <div>month</div>
-          </div>
-        </div>
-      )
-    },
-    style: {
-      background: 'hsl(var(--secondary))',
-      color: 'hsl(var(--secondary-foreground))',
-      border: '2px solid hsl(var(--secondary))',
-      borderRadius: '8px',
-      padding: '10px',
-      width: 140,
-    },
-  },
-];
+  });
 
-const initialEdges: Edge[] = [
-  {
-    id: 'e-campaign-fact',
-    source: 'dim_campaign',
-    target: 'fact',
-    animated: true,
-    style: { stroke: 'hsl(var(--primary))' },
-  },
-  {
-    id: 'e-product-fact',
-    source: 'dim_product',
-    target: 'fact',
-    animated: true,
-    style: { stroke: 'hsl(var(--primary))' },
-  },
-  {
-    id: 'e-customer-fact',
-    source: 'dim_customer',
-    target: 'fact',
-    animated: true,
-    style: { stroke: 'hsl(var(--primary))' },
-  },
-  {
-    id: 'e-date-fact',
-    source: 'dim_date',
-    target: 'fact',
-    animated: true,
-    style: { stroke: 'hsl(var(--primary))' },
-  },
-];
+  const center = { x: 400, y: 200 };
+  const radius = 220;
+  const count = Math.max(1, model.dimensions.length);
+  model.dimensions.forEach((dim, idx) => {
+    const angle = (2 * Math.PI * idx) / count;
+    const x = center.x + radius * Math.cos(angle);
+    const y = center.y + radius * Math.sin(angle);
+    const nodeId = `dim_${idx}`;
+    nodes.push({
+      id: nodeId,
+      type: 'default',
+      position: { x, y },
+      data: { label: buildLabel(dim) },
+      style: {
+        background: 'hsl(var(--secondary))',
+        color: 'hsl(var(--secondary-foreground))',
+        border: '2px solid hsl(var(--secondary))',
+        borderRadius: '8px',
+        padding: '10px',
+        width: 200,
+      },
+    });
 
-export default function DataModelDiagram() {
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+    edges.push({
+      id: `e-${nodeId}-fact`,
+      source: nodeId,
+      target: 'fact',
+      animated: true,
+      style: { stroke: 'hsl(var(--primary))' },
+    });
+  });
+
+  return { nodes, edges };
+}
+
+export default function DataModelDiagram({ model }: { model?: StarSchemaModel }) {
+  const generated = useMemo(() => generateGraphFromModel(model), [model]);
+  const [nodes, setNodes, onNodesChange] = useNodesState(generated.nodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(generated.edges);
+
+  useEffect(() => {
+    setNodes(generated.nodes);
+    setEdges(generated.edges);
+  }, [generated.nodes, generated.edges, setNodes, setEdges]);
 
   return (
     <div className="w-full h-[600px] border border-border rounded-lg bg-background">

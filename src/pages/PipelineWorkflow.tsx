@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useParams, useNavigate, Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, FileText, FileCode, Database, GitBranch, PlayCircle, Rocket } from "lucide-react";
@@ -11,8 +11,8 @@ import TestPipeline from "./TestPipeline";
 import DeployPipeline from "./DeployPipeline";
 
 const workflowSteps = [
-  { id: "upload", label: "Upload XSD", icon: FileText, component: UploadXSD },
-  { id: "generate", label: "Generate XML", icon: FileCode, component: GenerateXML },
+  { id: "upload", label: "Upload Metadata", icon: FileText, component: UploadXSD },
+  { id: "generate", label: "Generate Sample Data", icon: FileCode, component: GenerateXML },
   { id: "model", label: "Data Model", icon: Database, component: DataModel },
   { id: "build", label: "Build Pipeline", icon: GitBranch, component: BuildPipeline },
   { id: "test", label: "Test Pipeline", icon: PlayCircle, component: TestPipeline },
@@ -22,7 +22,18 @@ const workflowSteps = [
 export default function PipelineWorkflow() {
   const { projectId, pipelineId } = useParams();
   const navigate = useNavigate();
-  const [activeStep, setActiveStep] = useState("upload");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const stepIds = workflowSteps.map((s) => s.id);
+  const initialStepParam = searchParams.get("step") || "";
+  const initialStep = stepIds.includes(initialStepParam) ? initialStepParam : "upload";
+  const [activeStep, setActiveStep] = useState(initialStep);
+
+  useEffect(() => {
+    const stepParam = searchParams.get("step") || "";
+    if (stepParam && stepIds.includes(stepParam) && stepParam !== activeStep) {
+      setActiveStep(stepParam);
+    }
+  }, [searchParams, stepIds, activeStep]);
 
   const currentStepIndex = workflowSteps.findIndex(step => step.id === activeStep);
 
@@ -54,7 +65,10 @@ export default function PipelineWorkflow() {
           return (
             <div key={step.id} className="flex items-center">
               <button
-                onClick={() => setActiveStep(step.id)}
+                onClick={() => {
+                  setActiveStep(step.id);
+                  setSearchParams({ step: step.id });
+                }}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
                   isActive
                     ? "bg-primary text-primary-foreground shadow-glow"
@@ -92,7 +106,9 @@ export default function PipelineWorkflow() {
             onClick={() => {
               const prevIndex = currentStepIndex - 1;
               if (prevIndex >= 0) {
-                setActiveStep(workflowSteps[prevIndex].id);
+                const prevId = workflowSteps[prevIndex].id;
+                setActiveStep(prevId);
+                setSearchParams({ step: prevId });
               }
             }}
             disabled={currentStepIndex === 0}
@@ -103,7 +119,9 @@ export default function PipelineWorkflow() {
             onClick={() => {
               const nextIndex = currentStepIndex + 1;
               if (nextIndex < workflowSteps.length) {
-                setActiveStep(workflowSteps[nextIndex].id);
+                const nextId = workflowSteps[nextIndex].id;
+                setActiveStep(nextId);
+                setSearchParams({ step: nextId });
               }
             }}
             disabled={currentStepIndex === workflowSteps.length - 1}

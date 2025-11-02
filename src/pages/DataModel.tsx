@@ -1,9 +1,12 @@
+import { useMemo, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Database, GitBranch, Table } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import DataModelDiagram from "@/components/DataModelDiagram";
+import DataModelDiagram, { StarSchemaModel } from "@/components/DataModelDiagram";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
 import { useSearchParams } from "react-router-dom";
 
 const factTable = {
@@ -66,6 +69,122 @@ const dimensionTables = [
 export default function DataModel() {
   const [searchParams] = useSearchParams();
   const pipelineId = searchParams.get('pipeline');
+  const { toast } = useToast();
+
+  const [prompt, setPrompt] = useState("");
+  const [factTableState, setFactTableState] = useState(factTable);
+  const [dimensionTablesState, setDimensionTablesState] = useState(dimensionTables);
+
+  function generateModelFromPrompt(text: string): StarSchemaModel {
+    const lower = text.toLowerCase();
+    if (lower.includes("ecommerce") || lower.includes("order")) {
+      return {
+        fact: {
+          name: "fact_orders",
+          columns: [
+            { name: "order_id", type: "INTEGER", key: "PK" },
+            { name: "customer_id", type: "INTEGER", key: "FK" },
+            { name: "product_id", type: "INTEGER", key: "FK" },
+            { name: "date_id", type: "INTEGER", key: "FK" },
+            { name: "store_id", type: "INTEGER", key: "FK" },
+            { name: "quantity", type: "INTEGER" },
+            { name: "unit_price", type: "DECIMAL" },
+            { name: "revenue", type: "DECIMAL" },
+            { name: "discount", type: "DECIMAL" },
+          ],
+        },
+        dimensions: [
+          { name: "dim_customer", columns: [
+            { name: "customer_id", type: "INTEGER", key: "PK" },
+            { name: "customer_name", type: "VARCHAR" },
+            { name: "email", type: "VARCHAR" },
+            { name: "segment", type: "VARCHAR" },
+          ]},
+          { name: "dim_product", columns: [
+            { name: "product_id", type: "INTEGER", key: "PK" },
+            { name: "product_name", type: "VARCHAR" },
+            { name: "category", type: "VARCHAR" },
+            { name: "price", type: "DECIMAL" },
+          ]},
+          { name: "dim_store", columns: [
+            { name: "store_id", type: "INTEGER", key: "PK" },
+            { name: "store_name", type: "VARCHAR" },
+            { name: "region", type: "VARCHAR" },
+          ]},
+          { name: "dim_date", columns: [
+            { name: "date_id", type: "INTEGER", key: "PK" },
+            { name: "full_date", type: "DATE" },
+            { name: "year", type: "INTEGER" },
+            { name: "month", type: "INTEGER" },
+            { name: "day", type: "INTEGER" },
+          ]},
+        ],
+      };
+    }
+
+    if (lower.includes("healthcare") || lower.includes("patient") || lower.includes("hospital")) {
+      return {
+        fact: {
+          name: "fact_patient_visits",
+          columns: [
+            { name: "visit_id", type: "INTEGER", key: "PK" },
+            { name: "patient_id", type: "INTEGER", key: "FK" },
+            { name: "provider_id", type: "INTEGER", key: "FK" },
+            { name: "facility_id", type: "INTEGER", key: "FK" },
+            { name: "date_id", type: "INTEGER", key: "FK" },
+            { name: "diagnosis_code", type: "VARCHAR" },
+            { name: "charge_amount", type: "DECIMAL" },
+          ],
+        },
+        dimensions: [
+          { name: "dim_patient", columns: [
+            { name: "patient_id", type: "INTEGER", key: "PK" },
+            { name: "full_name", type: "VARCHAR" },
+            { name: "gender", type: "VARCHAR" },
+            { name: "age", type: "INTEGER" },
+          ]},
+          { name: "dim_provider", columns: [
+            { name: "provider_id", type: "INTEGER", key: "PK" },
+            { name: "provider_name", type: "VARCHAR" },
+            { name: "specialty", type: "VARCHAR" },
+          ]},
+          { name: "dim_facility", columns: [
+            { name: "facility_id", type: "INTEGER", key: "PK" },
+            { name: "facility_name", type: "VARCHAR" },
+            { name: "city", type: "VARCHAR" },
+          ]},
+          { name: "dim_date", columns: [
+            { name: "date_id", type: "INTEGER", key: "PK" },
+            { name: "full_date", type: "DATE" },
+            { name: "year", type: "INTEGER" },
+            { name: "month", type: "INTEGER" },
+          ]},
+        ],
+      };
+    }
+
+    // Default to the existing sales promotion model
+    return {
+      fact: factTable,
+      dimensions: dimensionTables,
+    };
+  }
+
+  const modelForDiagram = useMemo<StarSchemaModel>(() => ({
+    fact: factTableState,
+    dimensions: dimensionTablesState,
+  }), [factTableState, dimensionTablesState]);
+
+  const totalColumns = useMemo(() => (
+    factTableState.columns.length + dimensionTablesState.reduce((sum, t) => sum + t.columns.length, 0)
+  ), [factTableState.columns.length, dimensionTablesState]);
+
+  function handleGenerate() {
+    const result = generateModelFromPrompt(prompt);
+    setFactTableState(result.fact as any);
+    setDimensionTablesState(result.dimensions as any);
+    toast({ title: "Model generated", description: "Updated model based on your prompt." });
+  }
 
   return (
     <div className="space-y-8">
@@ -78,6 +197,25 @@ export default function DataModel() {
           }
         </p>
       </div>
+
+      {/* Prompt-based generation */}
+      <Card className="shadow-card border-border">
+        <CardHeader>
+          <CardTitle>Generate from Prompt</CardTitle>
+          <CardDescription>Describe your domain (e.g., "ecommerce orders", "healthcare patient visits").</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <Textarea
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
+            placeholder="Type a prompt to generate a star schema..."
+            className="min-h-[100px]"
+          />
+          <div className="flex justify-end">
+            <Button onClick={handleGenerate} disabled={!prompt.trim()}>Generate Model</Button>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Schema Type */}
       <Card className="shadow-card border-border">
@@ -111,7 +249,7 @@ export default function DataModel() {
               <CardDescription>Interactive visualization of fact and dimension tables with relationships</CardDescription>
             </CardHeader>
             <CardContent>
-              <DataModelDiagram />
+              <DataModelDiagram model={modelForDiagram} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -124,7 +262,7 @@ export default function DataModel() {
             <div>
               <CardTitle className="flex items-center gap-2">
                 <Database className="w-5 h-5 text-primary" />
-                {factTable.name}
+                {factTableState.name}
               </CardTitle>
               <CardDescription>Central fact table for sales promotion transactions</CardDescription>
             </div>
@@ -142,7 +280,7 @@ export default function DataModel() {
                 </tr>
               </thead>
               <tbody>
-                {factTable.columns.map((col, idx) => (
+                {factTableState.columns.map((col, idx) => (
                   <tr key={idx} className="border-b border-border/50 hover:bg-muted/50">
                     <td className="p-3 font-mono text-sm">{col.name}</td>
                     <td className="p-3 text-sm text-muted-foreground">{col.type}</td>
@@ -163,7 +301,7 @@ export default function DataModel() {
 
       {/* Dimension Tables */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {dimensionTables.map((table, idx) => (
+        {dimensionTablesState.map((table, idx) => (
           <Card key={idx} className="shadow-card border-border">
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -215,7 +353,7 @@ export default function DataModel() {
         <Card className="border-border">
           <CardContent className="p-4">
             <p className="text-xs text-muted-foreground mb-1">Total Tables</p>
-            <p className="text-2xl font-bold">5</p>
+            <p className="text-2xl font-bold">{1 + dimensionTablesState.length}</p>
           </CardContent>
         </Card>
         <Card className="border-border">
@@ -227,13 +365,13 @@ export default function DataModel() {
         <Card className="border-border">
           <CardContent className="p-4">
             <p className="text-xs text-muted-foreground mb-1">Dimension Tables</p>
-            <p className="text-2xl font-bold">4</p>
+            <p className="text-2xl font-bold">{dimensionTablesState.length}</p>
           </CardContent>
         </Card>
         <Card className="border-border">
           <CardContent className="p-4">
             <p className="text-xs text-muted-foreground mb-1">Total Columns</p>
-            <p className="text-2xl font-bold">24</p>
+            <p className="text-2xl font-bold">{totalColumns}</p>
           </CardContent>
         </Card>
       </div>
