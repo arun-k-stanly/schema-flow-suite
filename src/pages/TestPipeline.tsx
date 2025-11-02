@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { PlayCircle, FileCode, CheckCircle2, AlertCircle, Clock } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
+import { apiPipelineTransform } from "@/lib/api";
 
 export default function TestPipeline() {
   const [isRunning, setIsRunning] = useState(false);
@@ -11,33 +12,43 @@ export default function TestPipeline() {
   const [testResults, setTestResults] = useState<any>(null);
   const { toast } = useToast();
 
-  const handleRunTest = () => {
+  const handleRunTest = async () => {
     setIsRunning(true);
     setProgress(0);
     setTestResults(null);
 
-    // Simulate test execution
-    const interval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setIsRunning(false);
-          setTestResults({
-            status: "success",
-            recordsProcessed: 1250,
-            duration: "2.3s",
-            validationsPassed: 12,
-            validationsFailed: 0,
-          });
-          toast({
-            title: "Test Completed",
-            description: "Pipeline test executed successfully",
-          });
-          return 100;
-        }
-        return prev + 10;
+    // Start a lightweight transform on the backend while showing progress
+    try {
+      const promise = apiPipelineTransform({
+        rows: [
+          { id: 1, status: "ok", value: 10 },
+          { id: 2, status: "bad", value: 0 },
+          { id: 3, status: "ok", value: 5 },
+        ],
+        ops: [ { action: "filter_eq", column: "status", value: "ok" } ],
       });
-    }, 300);
+
+      const interval = setInterval(() => {
+        setProgress((prev) => (prev >= 90 ? 90 : prev + 10));
+      }, 250);
+
+      const res = await promise;
+      clearInterval(interval);
+      setProgress(100);
+      setIsRunning(false);
+      setTestResults({
+        status: "success",
+        recordsProcessed: res.count,
+        duration: "~1s",
+        validationsPassed: 1,
+        validationsFailed: 0,
+      });
+      toast({ title: "Test Completed", description: `Processed ${res.count} records` });
+    } catch (e: any) {
+      setIsRunning(false);
+      setProgress(0);
+      toast({ title: "Test Failed", description: e.message, variant: "destructive" });
+    }
   };
 
   return (

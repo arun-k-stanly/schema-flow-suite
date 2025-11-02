@@ -3,40 +3,20 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Plus, Settings, Trash2, PlayCircle, CheckCircle2, BarChart3 } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { apiListDeployments } from "@/lib/api";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
-const pipelines = [
-  {
-    id: 1,
-    name: "Campaign Analysis Pipeline",
-    xsdFile: "sales_promotion.xsd",
-    status: "running",
-    lastRun: "10 minutes ago",
-    records: "1.2M",
-    successRate: "99.8%"
-  },
-  {
-    id: 2,
-    name: "Product Performance Pipeline",
-    xsdFile: "product_data.xsd",
-    status: "completed",
-    lastRun: "2 hours ago",
-    records: "850K",
-    successRate: "100%"
-  },
-  {
-    id: 3,
-    name: "Customer Segmentation Pipeline",
-    xsdFile: "customer_info.xsd",
-    status: "idle",
-    lastRun: "1 day ago",
-    records: "2.3M",
-    successRate: "98.5%"
-  }
-];
+type Deployment = { id: string; name: string; status: string };
 
 export default function ProjectDetail() {
   const { projectId } = useParams();
+  const [pipelines, setPipelines] = useState<Deployment[]>([]);
+
+  useEffect(() => {
+    if (!projectId) return;
+    apiListDeployments(String(projectId)).then(setPipelines).catch(() => setPipelines([]));
+  }, [projectId]);
 
   return (
     <div className="space-y-8">
@@ -47,8 +27,8 @@ export default function ProjectDetail() {
           </Link>
         </Button>
         <div className="flex-1">
-          <h2 className="text-3xl font-bold mb-2">Sales Promotion Analytics</h2>
-          <p className="text-muted-foreground">End-to-end sales promotion data pipeline</p>
+          <h2 className="text-3xl font-bold mb-2">Project {projectId}</h2>
+          <p className="text-muted-foreground">Pipelines deployed for this project</p>
         </div>
         <Button size="lg" asChild>
           <Link to={`/project/${projectId}/pipeline/new`}>
@@ -67,27 +47,9 @@ export default function ProjectDetail() {
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
                     <h3 className="text-xl font-semibold">{pipeline.name}</h3>
-                    <Badge 
-                      variant={pipeline.status === "running" ? "default" : pipeline.status === "completed" ? "secondary" : "outline"}
-                    >
-                      {pipeline.status}
-                    </Badge>
+                    <Badge variant={pipeline.status === "deployed" ? "default" : "secondary"}>{pipeline.status}</Badge>
                   </div>
-                  <p className="text-sm text-muted-foreground mb-4">XSD File: {pipeline.xsdFile}</p>
-                  <div className="flex gap-6 text-sm">
-                    <div>
-                      <span className="text-muted-foreground">Last Run: </span>
-                      <span className="font-medium">{pipeline.lastRun}</span>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground">Records: </span>
-                      <span className="font-medium">{pipeline.records}</span>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground">Success Rate: </span>
-                      <span className="font-medium text-success">{pipeline.successRate}</span>
-                    </div>
-                  </div>
+                  <p className="text-sm text-muted-foreground mb-4">Recorded deployment</p>
                 </div>
                 <div className="flex gap-2">
                   <Button size="lg" asChild>

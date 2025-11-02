@@ -7,73 +7,23 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import DataModelDiagram, { StarSchemaModel } from "@/components/DataModelDiagram";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { apiDataModelSummarize } from "@/lib/api";
+import { apiGenerateModel } from "@/lib/api";
 import { useSearchParams } from "react-router-dom";
 
-const factTable = {
-  name: "fact_sales_promotions",
-  type: "Fact Table",
-  columns: [
-    { name: "transaction_id", type: "INTEGER", key: "PK" },
-    { name: "campaign_id", type: "INTEGER", key: "FK" },
-    { name: "product_id", type: "INTEGER", key: "FK" },
-    { name: "customer_id", type: "INTEGER", key: "FK" },
-    { name: "date_id", type: "INTEGER", key: "FK" },
-    { name: "quantity", type: "INTEGER", key: "" },
-    { name: "revenue", type: "DECIMAL", key: "" },
-    { name: "discount_amount", type: "DECIMAL", key: "" },
-  ]
-};
-
-const dimensionTables = [
-  {
-    name: "dim_campaign",
-    columns: [
-      { name: "campaign_id", type: "INTEGER", key: "PK" },
-      { name: "campaign_name", type: "VARCHAR", key: "" },
-      { name: "start_date", type: "DATE", key: "" },
-      { name: "end_date", type: "DATE", key: "" },
-      { name: "budget", type: "DECIMAL", key: "" },
-      { name: "discount_percentage", type: "DECIMAL", key: "" },
-    ]
-  },
-  {
-    name: "dim_product",
-    columns: [
-      { name: "product_id", type: "INTEGER", key: "PK" },
-      { name: "product_name", type: "VARCHAR", key: "" },
-      { name: "category", type: "VARCHAR", key: "" },
-      { name: "price", type: "DECIMAL", key: "" },
-    ]
-  },
-  {
-    name: "dim_customer",
-    columns: [
-      { name: "customer_id", type: "INTEGER", key: "PK" },
-      { name: "customer_name", type: "VARCHAR", key: "" },
-      { name: "email", type: "VARCHAR", key: "" },
-      { name: "segment", type: "VARCHAR", key: "" },
-    ]
-  },
-  {
-    name: "dim_date",
-    columns: [
-      { name: "date_id", type: "INTEGER", key: "PK" },
-      { name: "full_date", type: "DATE", key: "" },
-      { name: "year", type: "INTEGER", key: "" },
-      { name: "quarter", type: "INTEGER", key: "" },
-      { name: "month", type: "INTEGER", key: "" },
-    ]
-  },
-];
+const emptyFact = { name: "", type: "Fact Table", columns: [] as any[] } as const;
+const emptyDimensions: any[] = [];
 
 export default function DataModel() {
   const [searchParams] = useSearchParams();
   const pipelineId = searchParams.get('pipeline');
   const { toast } = useToast();
+  const [suggestion, setSuggestion] = useState<string | null>(null);
+  const [backendModel, setBackendModel] = useState<any | null>(null);
 
   const [prompt, setPrompt] = useState("");
-  const [factTableState, setFactTableState] = useState(factTable);
-  const [dimensionTablesState, setDimensionTablesState] = useState(dimensionTables);
+  const [factTableState, setFactTableState] = useState<any>(emptyFact);
+  const [dimensionTablesState, setDimensionTablesState] = useState<any[]>(emptyDimensions);
 
   function generateModelFromPrompt(text: string): StarSchemaModel {
     const lower = text.toLowerCase();
@@ -163,11 +113,8 @@ export default function DataModel() {
       };
     }
 
-    // Default to the existing sales promotion model
-    return {
-      fact: factTable,
-      dimensions: dimensionTables,
-    };
+    // If no known domain, return empty model
+    return { fact: emptyFact as any, dimensions: [] };
   }
 
   const modelForDiagram = useMemo<StarSchemaModel>(() => ({
@@ -184,6 +131,32 @@ export default function DataModel() {
     setFactTableState(result.fact as any);
     setDimensionTablesState(result.dimensions as any);
     toast({ title: "Model generated", description: "Updated model based on your prompt." });
+  }
+
+  async function handleSummarizeBackend() {
+    const schema = {
+      entities: [
+        { name: factTableState.name, columns: factTableState.columns },
+        ...dimensionTablesState.map((t) => ({ name: t.name, columns: t.columns }))
+      ]
+    };
+    try {
+      const res = await apiDataModelSummarize(schema as any);
+      setSuggestion(res.suggestion ?? null);
+      toast({ title: "Backend summary ready", description: res.suggestion || "No suggestion" });
+    } catch (e: any) {
+      toast({ title: "Backend error", description: e.message, variant: "destructive" });
+    }
+  }
+
+  async function handleGenerateModel() {
+    try {
+      const res = await apiGenerateModel();
+      setBackendModel(res.model);
+      toast({ title: "Model generated", description: "Backend created a model from schema" });
+    } catch (e: any) {
+      toast({ title: "Model error", description: e.message, variant: "destructive" });
+    }
   }
 
   return (
@@ -227,10 +200,14 @@ export default function DataModel() {
             <div className="flex-1">
               <h3 className="text-xl font-bold mb-1">Star Schema Model</h3>
               <p className="text-sm text-muted-foreground">
-                Optimized for sales promotion analytics with 1 fact table and 4 dimension tables
+                Define tables and relationships for your domain
               </p>
             </div>
-            <Button>Generate SQL DDL</Button>
+            <div className="flex gap-2">
+              <Button onClick={handleSummarizeBackend}>Summarize (Backend)</Button>
+              <Button variant="outline" onClick={handleGenerateModel}>Generate Model (Backend)</Button>
+              <Button>Generate SQL DDL</Button>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -255,6 +232,17 @@ export default function DataModel() {
         </TabsContent>
 
         <TabsContent value="tables" className="mt-6 space-y-6">
+      {suggestion && (
+        <Card className="shadow-card border-border">
+          <CardHeader>
+            <CardTitle>AI Suggestion</CardTitle>
+            <CardDescription>From backend data-model agent</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm whitespace-pre-wrap">{suggestion}</p>
+          </CardContent>
+        </Card>
+      )}
       {/* Fact Table */}
       <Card className="shadow-card border-border">
         <CardHeader>

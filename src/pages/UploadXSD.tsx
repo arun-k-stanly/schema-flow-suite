@@ -4,12 +4,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Upload, FileText, Check, AlertCircle } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { apiParseMetadata } from "@/lib/api";
 
 export default function UploadXSD() {
   const [file, setFile] = useState<File | null>(null);
   const [isUploaded, setIsUploaded] = useState(false);
   const { toast } = useToast();
   const [format, setFormat] = useState<string>("xsd");
+  const [preview, setPreview] = useState<any | null>(null);
 
   const formatLabel: Record<string, string> = {
     xsd: "XSD",
@@ -38,14 +40,19 @@ export default function UploadXSD() {
 
   const handleUpload = () => {
     if (file) {
-      // Simulate upload
-      setTimeout(() => {
-        setIsUploaded(true);
-        toast({
-          title: "Metadata Uploaded Successfully",
-          description: `File "${file.name}" has been processed.`,
-        });
-      }, 1000);
+      (async () => {
+        try {
+          const res = await apiParseMetadata(format, file);
+          setPreview(res.summary);
+          try { localStorage.setItem('schemaPreview', JSON.stringify(res.summary)); } catch {}
+          setIsUploaded(true);
+          toast({ title: "Parsed Successfully", description: `File "${file.name}" processed.` });
+        } catch (e: any) {
+          setPreview(null);
+          setIsUploaded(false);
+          toast({ title: "Parse failed", description: e.message, variant: "destructive" });
+        }
+      })();
     }
   };
 
@@ -127,26 +134,30 @@ export default function UploadXSD() {
             <CardDescription>Parsed {formatLabel[format]} schema will appear here</CardDescription>
           </CardHeader>
           <CardContent>
-            {isUploaded ? (
+            {isUploaded && preview ? (
               <div className="space-y-3">
-                <div className="p-3 bg-muted rounded-lg border-l-4 border-primary">
-                  <p className="font-mono text-sm font-medium">SalesPromotion</p>
-                  <p className="text-xs text-muted-foreground mt-1">Root {format === "xsd" ? "Element" : "Entity"}</p>
-                </div>
-                <div className="ml-6 space-y-2">
-                  <div className="p-3 bg-muted/50 rounded-lg border-l-4 border-secondary">
-                    <p className="font-mono text-sm">Campaign</p>
+                {(preview.elements || []).map((el: any, idx: number) => (
+                  <div key={idx} className="p-3 bg-muted rounded-lg border-l-4 border-primary">
+                    <p className="font-mono text-sm font-medium">{el.name}</p>
+                    {el.children && el.children.length > 0 ? (
+                      <div className="ml-4 mt-2 space-y-1">
+                        {el.children.map((c: any, cidx: number) => {
+                          const label = typeof c === 'string' ? c : (c?.name ?? '');
+                          return (
+                            <div key={cidx} className="p-2 bg-muted/50 rounded">
+                              <p className="font-mono text-xs">{label}</p>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-muted-foreground">No child elements detected</p>
+                    )}
                   </div>
-                  <div className="p-3 bg-muted/50 rounded-lg border-l-4 border-secondary">
-                    <p className="font-mono text-sm">Products</p>
-                  </div>
-                  <div className="p-3 bg-muted/50 rounded-lg border-l-4 border-secondary">
-                    <p className="font-mono text-sm">Customers</p>
-                  </div>
-                  <div className="p-3 bg-muted/50 rounded-lg border-l-4 border-secondary">
-                    <p className="font-mono text-sm">Transactions</p>
-                  </div>
-                </div>
+                ))}
+                {(preview.elements || []).length === 0 && (
+                  <p className="text-sm text-muted-foreground">No top-level elements found.</p>
+                )}
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center py-12 text-center">

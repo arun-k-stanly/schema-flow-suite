@@ -1,0 +1,81 @@
+{
+  "elements": [
+    {
+      "name": "shiporder",
+      "maxOccurs": null,
+      "attributes": [
+        "orderid"
+      ],
+      "children": [
+        {
+          "name": "orderperson",
+          "maxOccurs": null,
+          "attributes": [],
+          "children": []
+        },
+        {
+          "name": "shipto",
+          "maxOccurs": null,
+          "attributes": [],
+          "children": [
+            {
+              "name": "name",
+              "maxOccurs": null,
+              "attributes": [],
+              "children": []
+            },
+            {
+              "name": "address",
+              "maxOccurs": null,
+              "attributes": [],
+              "children": []
+            },
+            {
+              "name": "city",
+              "maxOccurs": null,
+              "attributes": [],
+              "children": []
+            },
+            {
+              "name": "country",
+              "maxOccurs": null,
+              "attributes": [],
+              "children": []
+            }
+          ]
+        },
+        {
+          "name": "item",
+          "maxOccurs": "unbounded",
+          "attributes": [],
+          "children": [
+            {
+              "name": "title",
+              "maxOccurs": null,
+              "attributes": [],
+              "children": []
+            },
+            {
+              "name": "note",
+              "maxOccurs": null,
+              "attributes": [],
+              "children": []
+            },
+            {
+              "name": "quantity",
+              "maxOccurs": null,
+              "attributes": [],
+              "children": []
+            },
+            {
+              "name": "price",
+              "maxOccurs": null,
+              "attributes": [],
+              "children": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

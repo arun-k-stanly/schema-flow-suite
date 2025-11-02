@@ -47,30 +47,11 @@ export default function DeployPipeline() {
         <CardHeader>
           <CardTitle>Pre-Deployment Checklist</CardTitle>
           <CardDescription>
-            Ensure all requirements are met before deployment
+            Complete pipeline configuration and testing before deployment
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="flex items-center gap-3">
-            <CheckCircle2 className="w-5 h-5 text-success" />
-            <span className="text-sm">XSD file validated</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <CheckCircle2 className="w-5 h-5 text-success" />
-            <span className="text-sm">Sample XML generated</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <CheckCircle2 className="w-5 h-5 text-success" />
-            <span className="text-sm">Data model created</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <CheckCircle2 className="w-5 h-5 text-success" />
-            <span className="text-sm">PySpark code generated</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <CheckCircle2 className="w-5 h-5 text-success" />
-            <span className="text-sm">Pipeline tested successfully</span>
-          </div>
+        <CardContent className="space-y-2">
+          <p className="text-sm text-muted-foreground">No checklist items yet.</p>
         </CardContent>
       </Card>
 
@@ -80,24 +61,7 @@ export default function DeployPipeline() {
           <CardTitle>Deployment Configuration</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <p className="text-sm font-medium">Environment</p>
-              <Badge variant="default">Production</Badge>
-            </div>
-            <div className="space-y-1">
-              <p className="text-sm font-medium">Version</p>
-              <p className="text-sm text-muted-foreground">v1.0.0</p>
-            </div>
-            <div className="space-y-1">
-              <p className="text-sm font-medium">Cluster</p>
-              <p className="text-sm text-muted-foreground">spark-cluster-prod-01</p>
-            </div>
-            <div className="space-y-1">
-              <p className="text-sm font-medium">Resources</p>
-              <p className="text-sm text-muted-foreground">4 cores, 16GB RAM</p>
-            </div>
-          </div>
+          <div className="text-sm text-muted-foreground">No deployment configuration set.</div>
         </CardContent>
       </Card>
 
@@ -145,40 +109,11 @@ export default function DeployPipeline() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="p-4 rounded-lg bg-success/10">
-              <p className="text-sm font-medium mb-2">Your pipeline is now live!</p>
-              <p className="text-sm text-muted-foreground">
-                The pipeline has been successfully deployed to production and is ready to process data.
-              </p>
+              <p className="text-sm text-muted-foreground">Deployment details will appear here after a real deploy.</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Card>
-                <CardHeader className="pb-3">
-                  <div className="flex items-center gap-2">
-                    <Globe className="w-4 h-4 text-primary" />
-                    <CardDescription>Endpoint</CardDescription>
-                  </div>
-                  <p className="text-xs font-mono">api.prod.pipeline.io</p>
-                </CardHeader>
-              </Card>
-              <Card>
-                <CardHeader className="pb-3">
-                  <div className="flex items-center gap-2">
-                    <Server className="w-4 h-4 text-primary" />
-                    <CardDescription>Status</CardDescription>
-                  </div>
-                  <p className="text-xs font-medium text-success">Active</p>
-                </CardHeader>
-              </Card>
-              <Card>
-                <CardHeader className="pb-3">
-                  <div className="flex items-center gap-2">
-                    <Shield className="w-4 h-4 text-primary" />
-                    <CardDescription>Security</CardDescription>
-                  </div>
-                  <p className="text-xs font-medium">Enabled</p>
-                </CardHeader>
-              </Card>
+              <div className="text-sm text-muted-foreground">No endpoints or status to show.</div>
             </div>
 
             <div className="flex gap-2">
