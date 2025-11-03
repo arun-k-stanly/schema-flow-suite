@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from fastapi import APIRouter
 from pydantic import BaseModel, Field
-from ..utils.storage import read_json
+from ..utils.storage import read_json, write_json
 
 
 router = APIRouter(prefix="/generate", tags=["generate"]) 
@@ -132,8 +132,16 @@ def generate_sample(req: GenerateRequest):
             rows.append(row)
 
         if fmt == "table":
+            try:
+                write_json("last_rows.json", rows)
+            except Exception:
+                pass
             return {"format": fmt, "rows": rows}
         if fmt == "json":
+            try:
+                write_json("last_rows.json", rows)
+            except Exception:
+                pass
             return {"format": fmt, "content": rows}
         if fmt == "csv":
             headers = list(rows[0].keys()) if rows else []
@@ -151,8 +159,16 @@ def generate_sample(req: GenerateRequest):
     item_name, fields = _fields_from_schema(schema)
     rows = [{f: _gen_value(f, i) for f in fields} for i in range(count)]
     if fmt == "table":
+        try:
+            write_json("last_rows.json", rows)
+        except Exception:
+            pass
         return {"format": fmt, "rows": rows}
     if fmt == "json":
+        try:
+            write_json("last_rows.json", rows)
+        except Exception:
+            pass
         return {"format": fmt, "content": rows}
     if fmt == "csv":
         header = ",".join(fields)

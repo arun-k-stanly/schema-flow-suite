@@ -24,8 +24,10 @@ export default function GenerateXML() {
       if (format === 'table') {
         setTableRows(Array.isArray(res.rows) ? res.rows : []);
         setXmlContent("");
+        try { localStorage.setItem('sampleRows', JSON.stringify(res.rows || [])); } catch {}
       } else if (format === 'json') {
         setXmlContent(JSON.stringify(res.content ?? res, null, 2));
+        try { localStorage.setItem('sampleRows', JSON.stringify(res.content || [])); } catch {}
       } else {
         setXmlContent(res.content ?? '');
       }

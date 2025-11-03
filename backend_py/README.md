@@ -29,10 +29,10 @@ pip install -r requirements.txt
 3. Run the API:
 
 ```bash
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+uvicorn app.main:app --host 0.0.0.0 --port 8001 --reload
 ```
 
-Open: http://localhost:8000/api/health
+Open: http://localhost:8001/api/health
 
 ## Environment Variables (.env)
 - `GROQ_API_KEY`: Groq API key (required for AI endpoints)
@@ -45,21 +45,21 @@ Open: http://localhost:8000/api/health
 
 - Agents (Groq):
 ```bash
-curl -X POST http://localhost:8000/api/agents/ask \
+curl -X POST http://localhost:8001/api/agents/ask \
   -H "Content-Type: application/json" \
   -d '{"agent":"groq","payload":{"message":"Summarize the pipeline purpose"}}'
 ```
 
 - Pipeline transform (PySpark):
 ```bash
-curl -X POST http://localhost:8000/api/pipeline/transform \
+curl -X POST http://localhost:8001/api/pipeline/transform \
   -H "Content-Type: application/json" \
   -d '{"rows":[{"id":1,"status":"ok"},{"id":2,"status":"bad"}],"ops":[{"action":"filter_eq","column":"status","value":"ok"}]}'
 ```
 
 - Projects:
 ```bash
-curl -X POST http://localhost:8000/api/projects \
+curl -X POST http://localhost:8001/api/projects \
   -H "Content-Type: application/json" \
   -d '{"id":"proj-1","name":"Demo"}'
 ```

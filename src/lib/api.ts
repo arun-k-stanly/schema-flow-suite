@@ -1,4 +1,9 @@
-const API_BASE = (import.meta as any).env?.VITE_API_URL || 'http://127.0.0.1:8000/api';
+const API_BASE = (() => {
+  const envUrl = (import.meta as any).env?.VITE_API_URL;
+  if (envUrl) return envUrl;
+  const hostname = (globalThis as any)?.location?.hostname || '127.0.0.1';
+  return `http://${hostname}:8001/api`;
+})();
 
 type HttpMethod = 'GET' | 'POST' | 'DELETE';
 
@@ -70,13 +75,27 @@ export async function apiGenerateSample(params: { format: string; count: number;
 }
 
 // Model generation from saved schema
-export async function apiGenerateModel(): Promise<{ model: any }> {
-  return request(`/model/generate`, 'POST', {});
+export async function apiGenerateModel(body?: { prompt?: string; schema?: any; sampleRows?: any[] }): Promise<{ model: any }> {
+  return request(`/model/generate`, 'POST', body || {});
 }
 
 // Code generation
-export async function apiGenerateCode(model: any): Promise<{ language: string; framework: string; code: string }>{
-  return request(`/code/pyspark`, 'POST', { model, input_format: 'json' });
+type InputFormat = 'json' | 'xml' | 'csv' | 'parquet' | 'avro';
+
+export async function apiGenerateCode(
+  model: any,
+  inputFormat: InputFormat = 'json',
+  inputPath?: string,
+  inputOptions?: Record<string, any>,
+  adlsConfig?: { enabled?: boolean; account_name?: string; account_key?: string; container?: string }
+): Promise<{ language: string; framework: string; code: string }>{
+  return request(`/code/pyspark`, 'POST', {
+    model,
+    input_format: inputFormat,
+    input_path: inputPath,
+    input_options: inputOptions,
+    adls_config: adlsConfig,
+  });
 }
 
 // Deployments

@@ -1,14 +1,26 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Code, Download, Play } from "lucide-react";
+import { Code, Download } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { apiGenerateModel, apiGenerateCode, apiCreateDeployment } from "@/lib/api";
+import { apiGenerateModel, apiGenerateCode } from "@/lib/api";
 
 export default function BuildPipeline() {
   const { toast } = useToast();
   const [code, setCode] = useState<string>("");
+  const [inputFormat, setInputFormat] = useState<'json' | 'xml' | 'csv' | 'parquet' | 'avro'>("json");
+  const [inputPath, setInputPath] = useState<string>("input.json");
+  const [csvHeader, setCsvHeader] = useState<boolean>(true);
+  const [csvInferSchema, setCsvInferSchema] = useState<boolean>(true);
+  const [adlsEnabled, setAdlsEnabled] = useState<boolean>(false);
+  const [adlsAccount, setAdlsAccount] = useState<string>("");
+  const [adlsContainer, setAdlsContainer] = useState<string>("");
+  const [adlsKey, setAdlsKey] = useState<string>("");
   return (
     <div className="space-y-8">
       <div>
@@ -27,7 +39,13 @@ export default function BuildPipeline() {
             <Button className="w-full" size="lg" onClick={async () => {
               try {
                 const { model } = await apiGenerateModel();
-                const res = await apiGenerateCode(model);
+                const inputOptions: Record<string, any> = {};
+                if (inputFormat === 'csv') {
+                  inputOptions.header = csvHeader;
+                  inputOptions.inferSchema = csvInferSchema;
+                }
+                const adlsConfig = adlsEnabled ? { enabled: true, account_name: adlsAccount, account_key: adlsKey, container: adlsContainer } : undefined;
+                const res = await apiGenerateCode(model, inputFormat, inputPath, inputOptions, adlsConfig);
                 setCode(res.code);
                 toast({ title: "Code generated", description: "PySpark ETL created" });
               } catch (e: any) {
@@ -49,18 +67,7 @@ export default function BuildPipeline() {
               <Download className="w-4 h-4 mr-2" />
               Download Code
             </Button>
-            <Button variant="outline" className="w-full" onClick={async () => {
-              if (!code) { toast({ title: "No code", description: "Generate code first" }); return; }
-              try {
-                await apiCreateDeployment('default', 'Generated Pipeline', code);
-                toast({ title: "Deployed", description: "Pipeline recorded as deployed" });
-              } catch (e: any) {
-                toast({ title: "Deploy failed", description: e.message, variant: "destructive" });
-              }
-            }}>
-              <Play className="w-4 h-4 mr-2" />
-              Deploy (record)
-            </Button>
+            
           </CardContent>
         </Card>
 
@@ -78,18 +85,76 @@ export default function BuildPipeline() {
               </TabsList>
               
               <TabsContent value="pyspark">
-                <div className="bg-muted rounded-lg p-4 overflow-x-auto">
-                  {code ? (
-                    <pre className="text-xs font-mono"><code>{code}</code></pre>
-                  ) : (
-                    <p className="text-sm text-muted-foreground">No code generated yet.</p>
-                  )}
+                <div className="bg-muted rounded-lg p-4">
+                  <Textarea
+                    value={code}
+                    onChange={(e) => setCode(e.target.value)}
+                    placeholder="Generated PySpark code will appear here. You can edit it manually."
+                    className="min-h-[420px] font-mono text-xs"
+                  />
                 </div>
               </TabsContent>
               
               <TabsContent value="config">
-                <div className="bg-muted rounded-lg p-4 overflow-x-auto">
-                  <p className="text-sm text-muted-foreground">No configuration available.</p>
+                <div className="bg-muted rounded-lg p-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Input Format</label>
+                      <Select value={inputFormat} onValueChange={(v: any) => {
+                        setInputFormat(v);
+                        const defaults: any = { json: 'input.json', xml: 'input.xml', csv: 'input.csv', parquet: 'input.parquet', avro: 'input.avro' };
+                        setInputPath(defaults[v] || 'input.json');
+                      }}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select format" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="json">JSON</SelectItem>
+                          <SelectItem value="xml">XML</SelectItem>
+                          <SelectItem value="csv">CSV</SelectItem>
+                          <SelectItem value="parquet">Parquet</SelectItem>
+                          <SelectItem value="avro">Avro</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-muted-foreground">XML requires spark-xml, Avro requires spark-avro in your runtime.</p>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Input File Path</label>
+                      <Input
+                        value={inputPath}
+                        onChange={(e) => setInputPath(e.target.value)}
+                        placeholder={{ json: 'input.json', xml: 'input.xml', csv: 'input.csv', parquet: 'input.parquet', avro: 'input.avro' }[inputFormat]}
+                      />
+                      <p className="text-xs text-muted-foreground">Provide a local/remote path readable by your Spark cluster.</p>
+                    </div>
+                    {inputFormat === 'csv' && (
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">CSV Options</label>
+                        <div className="flex items-center gap-3">
+                          <Switch checked={csvHeader} onCheckedChange={setCsvHeader} />
+                          <span className="text-sm">Header</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <Switch checked={csvInferSchema} onCheckedChange={setCsvInferSchema} />
+                          <span className="text-sm">Infer Schema</span>
+                        </div>
+                      </div>
+                    )}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Read from ADLS Gen2</label>
+                      <div className="flex items-center gap-3">
+                        <Switch checked={adlsEnabled} onCheckedChange={setAdlsEnabled} />
+                        <span className="text-sm">Enable</span>
+                      </div>
+                      {adlsEnabled && (
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-2">
+                          <Input placeholder="Account Name" value={adlsAccount} onChange={(e) => setAdlsAccount(e.target.value)} />
+                          <Input placeholder="Container" value={adlsContainer} onChange={(e) => setAdlsContainer(e.target.value)} />
+                          <Input placeholder="Account Key (or use cluster creds)" value={adlsKey} onChange={(e) => setAdlsKey(e.target.value)} />
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </TabsContent>
             </Tabs>

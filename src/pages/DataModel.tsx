@@ -7,7 +7,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import DataModelDiagram, { StarSchemaModel } from "@/components/DataModelDiagram";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { apiDataModelSummarize } from "@/lib/api";
 import { apiGenerateModel } from "@/lib/api";
 import { useSearchParams } from "react-router-dom";
 
@@ -18,7 +17,6 @@ export default function DataModel() {
   const [searchParams] = useSearchParams();
   const pipelineId = searchParams.get('pipeline');
   const { toast } = useToast();
-  const [suggestion, setSuggestion] = useState<string | null>(null);
   const [backendModel, setBackendModel] = useState<any | null>(null);
 
   const [prompt, setPrompt] = useState("");
@@ -170,59 +168,47 @@ export default function DataModel() {
     factTableState.columns.length + dimensionTablesState.reduce((sum, t) => sum + t.columns.length, 0)
   ), [factTableState.columns.length, dimensionTablesState]);
 
-  function handleGenerate() {
-    const result = generateModelFromPrompt(prompt);
-    setFactTableState(result.fact as any);
-    setDimensionTablesState(result.dimensions as any);
-    setHasGenerated(true);
-    toast({ title: "Model generated", description: "Updated model based on your prompt." });
-  }
-
-  async function handleSummarizeBackend() {
-    const schema = {
-      entities: [
-        { name: factTableState.name, columns: factTableState.columns },
-        ...dimensionTablesState.map((t) => ({ name: t.name, columns: t.columns }))
-      ]
+  const schemaTypeLabel = useMemo(() => {
+    const t = (backendModel?.schema_type || '').toLowerCase();
+    if (!t) return 'Data Model';
+    const map: Record<string, string> = {
+      star: 'Star Schema',
+      snowflake: 'Snowflake Schema',
+      galaxy: 'Galaxy Schema',
+      wide_table: 'Wide Table',
+      data_vault: 'Data Vault',
     };
-    try {
-      const res = await apiDataModelSummarize(schema as any);
-      setSuggestion(res.suggestion ?? null);
-      toast({ title: "Backend summary ready", description: res.suggestion || "No suggestion" });
-    } catch (e: any) {
-      toast({ title: "Backend error", description: e.message, variant: "destructive" });
-    }
-  }
+    return map[t] || 'Data Model';
+  }, [backendModel?.schema_type]);
 
-  async function handleGenerateModel() {
+  const modelHeaderTitle = useMemo(() => (
+    backendModel?.schema_type ? `${schemaTypeLabel} Model` : 'Data Model'
+  ), [backendModel?.schema_type, schemaTypeLabel]);
+
+  const architectureHeaderTitle = useMemo(() => (
+    backendModel?.schema_type ? `${schemaTypeLabel} Architecture` : 'Model Architecture'
+  ), [backendModel?.schema_type, schemaTypeLabel]);
+
+  async function handleGenerate() {
     try {
-      const res = await apiGenerateModel();
-      setBackendModel(res.model);
+      let sampleRows: any[] | undefined = undefined;
+      try { sampleRows = JSON.parse(localStorage.getItem('sampleRows') || 'null') || undefined; } catch {}
+      let schema: any | undefined = undefined;
+      try { schema = JSON.parse(localStorage.getItem('schemaPreview') || 'null') || undefined; } catch {}
+      const res = await apiGenerateModel({ prompt, sampleRows, schema });
       if (res?.model) {
+        setBackendModel(res.model);
         setFactTableState(res.model.fact as any);
         setDimensionTablesState((res.model.dimensions || []) as any);
       }
       setHasGenerated(true);
-      let empty = !(res?.model?.fact?.columns?.length) && !(res?.model?.dimensions?.length);
-      if (empty) {
-        // Fallback: derive on the client from last uploaded schema preview
-        try {
-          const cached = localStorage.getItem('schemaPreview');
-          if (cached) {
-            const derived = deriveModelFromSchemaPreview(JSON.parse(cached));
-            if (derived) {
-              setFactTableState(derived.fact as any);
-              setDimensionTablesState(derived.dimensions as any);
-              empty = false;
-            }
-          }
-        } catch {}
-      }
-      toast({ title: "Model generated", description: empty ? "No fields detected. Upload metadata first, then generate." : "Backend created a model from schema" });
+      toast({ title: "Model generated", description: "Backend created a model from schema" });
     } catch (e: any) {
       toast({ title: "Model error", description: e.message, variant: "destructive" });
     }
   }
+
+  
 
   return (
     <div className="space-y-8">
@@ -263,14 +249,12 @@ export default function DataModel() {
               <GitBranch className="w-8 h-8 text-primary" />
             </div>
             <div className="flex-1">
-              <h3 className="text-xl font-bold mb-1">Star Schema Model</h3>
+              <h3 className="text-xl font-bold mb-1">{modelHeaderTitle}</h3>
               <p className="text-sm text-muted-foreground">
-                Define tables and relationships for your domain
+                {backendModel?.title || 'Define tables and relationships for your domain'}
               </p>
             </div>
             <div className="flex gap-2">
-              <Button onClick={handleSummarizeBackend}>Summarize (Backend)</Button>
-              <Button variant="outline" onClick={handleGenerateModel}>Generate Model (Backend)</Button>
               <Button>Generate SQL DDL</Button>
             </div>
           </div>
@@ -287,15 +271,15 @@ export default function DataModel() {
         <TabsContent value="diagram" className="mt-6">
           <Card className="shadow-card border-border">
             <CardHeader>
-              <CardTitle>Star Schema Architecture</CardTitle>
-              <CardDescription>Interactive visualization of fact and dimension tables with relationships</CardDescription>
+              <CardTitle>{architectureHeaderTitle}</CardTitle>
+              <CardDescription>{backendModel?.description || 'Interactive visualization of tables and relationships'}</CardDescription>
             </CardHeader>
             <CardContent>
               {hasGenerated ? (
                 <DataModelDiagram model={modelForDiagram} />
               ) : (
                 <div className="w-full h-[300px] flex items-center justify-center text-sm text-muted-foreground">
-                  Click "Generate Model (Backend)" to visualize the model.
+                  Click "Generate Model" to visualize the model.
                 </div>
               )}
             </CardContent>
@@ -303,17 +287,7 @@ export default function DataModel() {
         </TabsContent>
 
         <TabsContent value="tables" className="mt-6 space-y-6">
-      {suggestion && (
-        <Card className="shadow-card border-border">
-          <CardHeader>
-            <CardTitle>AI Suggestion</CardTitle>
-            <CardDescription>From backend data-model agent</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm whitespace-pre-wrap">{suggestion}</p>
-          </CardContent>
-        </Card>
-      )}
+      
       {/* Fact Table */}
       <Card className="shadow-card border-border">
         <CardHeader>
@@ -357,7 +331,7 @@ export default function DataModel() {
             </table>
             ) : (
               <div className="w-full h-[120px] flex items-center justify-center text-sm text-muted-foreground">
-                No columns yet. Click "Generate Model (Backend)" above.
+                No columns yet. Click "Generate Model" above.
               </div>
             )}
           </div>
