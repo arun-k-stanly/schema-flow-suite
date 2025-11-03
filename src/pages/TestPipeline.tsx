@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { PlayCircle, FileCode, CheckCircle2, AlertCircle, Clock } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
-import { apiPipelineTransform, apiAgentAsk } from "@/lib/api";
+import { apiPipelineTransform } from "@/lib/api";
 
 export default function TestPipeline() {
   const [isRunning, setIsRunning] = useState(false);
