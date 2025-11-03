@@ -89,9 +89,9 @@ def generate_pyspark(req: CodeGenRequest):
         code.append(f"input_df = reader.csv('{path}')")
     elif fmt == "xml":
         code.append("# Requires spark-xml package")
-        # default rowTag if not provided
+        # default rowTag to the fact table name when not provided
         if not options.get("rowTag"):
-            code.append("reader = reader.option('rowTag','records')")
+            code.append(f"reader = reader.option('rowTag','{fact_name}')")
         code.append(f"input_df = reader.format('xml').load('{path}')")
     else:
         code.append(f"# Unsupported format '{fmt}', reading as JSON fallback")

@@ -4,18 +4,20 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { PlayCircle, FileCode, CheckCircle2, AlertCircle, Clock } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
-import { apiPipelineTransform } from "@/lib/api";
+import { apiPipelineTransform, apiAgentAsk } from "@/lib/api";
 
 export default function TestPipeline() {
   const [isRunning, setIsRunning] = useState(false);
   const [progress, setProgress] = useState(0);
   const [testResults, setTestResults] = useState<any>(null);
+  const [errorInfo, setErrorInfo] = useState<{ message: string; details?: string } | null>(null);
   const { toast } = useToast();
 
   const handleRunTest = async () => {
     setIsRunning(true);
     setProgress(0);
     setTestResults(null);
+    setErrorInfo(null);
 
     // Start a lightweight transform on the backend while showing progress
     try {
@@ -47,9 +49,13 @@ export default function TestPipeline() {
     } catch (e: any) {
       setIsRunning(false);
       setProgress(0);
-      toast({ title: "Test Failed", description: e.message, variant: "destructive" });
+      const msg = e?.message || "Unknown error";
+      setErrorInfo({ message: msg, source: "interpreter" });
+      toast({ title: "Test Failed", description: msg, variant: "destructive" });
     }
   };
+
+  // AI analysis removed
 
   return (
     <div className="space-y-6">
@@ -91,15 +97,17 @@ export default function TestPipeline() {
             </div>
           </div>
 
-          <Button
-            size="lg"
-            onClick={handleRunTest}
-            disabled={isRunning}
-            className="w-full"
-          >
-            <PlayCircle className="w-4 h-4 mr-2" />
-            {isRunning ? "Running Test..." : "Run Test Pipeline"}
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <Button
+              size="lg"
+              onClick={handleRunTest}
+              disabled={isRunning}
+              className="w-full sm:w-auto"
+            >
+              <PlayCircle className="w-4 h-4 mr-2" />
+              {isRunning ? "Running (Interpreter)..." : "Run (Interpreter)"}
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
@@ -168,6 +176,26 @@ export default function TestPipeline() {
                 All validations passed. The pipeline is ready for deployment.
               </p>
             </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Error Details */}
+      {errorInfo && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <AlertCircle className="w-5 h-5 text-destructive" />
+              Test Failed
+            </CardTitle>
+            <CardDescription>See error and optionally ask AI for a quick diagnosis.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="p-3 rounded border border-destructive/30 bg-destructive/10">
+              <p className="text-sm font-medium">Error</p>
+              <p className="text-sm text-destructive mt-1">{errorInfo.message}</p>
+            </div>
+            {/* AI analysis controls removed */}
           </CardContent>
         </Card>
       )}
