@@ -17,16 +17,22 @@ export type StarSchemaModel = { fact: TableModel; dimensions: TableModel[] };
 function buildLabel(table: TableModel) {
   return (
     <div className="p-2">
-      <div className="font-bold text-sm mb-1">{table.name}</div>
+      <div className="font-bold text-sm mb-1">{table.name || 'Fact'}</div>
       <div className="text-xs space-y-0.5">
-        {table.columns.slice(0, 12).map((col, idx) => (
-          <div key={idx}>
-            {col.key === 'PK' ? '🔑 ' : col.key === 'FK' ? '🔗 ' : ''}
-            {col.name}{col.key ? ` (${col.key})` : ''}
-          </div>
-        ))}
-        {table.columns.length > 12 && (
-          <div>… {table.columns.length - 12} more</div>
+        {(table.columns || []).length === 0 ? (
+          <div className="opacity-80">No columns</div>
+        ) : (
+          <>
+            {(table.columns || []).slice(0, 12).map((col, idx) => (
+              <div key={idx}>
+                {col.key === 'PK' ? '🔑 ' : col.key === 'FK' ? '🔗 ' : ''}
+                {col.name}: {col.type || 'VARCHAR'}{col.key ? ` (${col.key})` : ''}
+              </div>
+            ))}
+            {(table.columns || []).length > 12 && (
+              <div>… {table.columns.length - 12} more</div>
+            )}
+          </>
         )}
       </div>
     </div>
@@ -93,9 +99,9 @@ function generateGraphFromModel(model?: StarSchemaModel): { nodes: Node[]; edges
     position: { x: 400, y: 200 },
     data: { label: buildLabel(model.fact) },
     style: {
-      background: 'hsl(var(--primary))',
-      color: 'hsl(var(--primary-foreground))',
-      border: '2px solid hsl(var(--primary))',
+      background: '#0ea5e9',
+      color: '#ffffff',
+      border: '2px solid #0ea5e9',
       borderRadius: '8px',
       padding: '10px',
       width: 260,
@@ -116,9 +122,9 @@ function generateGraphFromModel(model?: StarSchemaModel): { nodes: Node[]; edges
       position: { x, y },
       data: { label: buildLabel(dim) },
       style: {
-        background: 'hsl(var(--secondary))',
-        color: 'hsl(var(--secondary-foreground))',
-        border: '2px solid hsl(var(--secondary))',
+        background: '#22c55e',
+        color: '#062a12',
+        border: '2px solid #22c55e',
         borderRadius: '8px',
         padding: '10px',
         width: 200,

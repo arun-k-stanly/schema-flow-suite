@@ -24,6 +24,50 @@ export default function DataModel() {
   const [prompt, setPrompt] = useState("");
   const [factTableState, setFactTableState] = useState<any>(emptyFact);
   const [dimensionTablesState, setDimensionTablesState] = useState<any[]>(emptyDimensions);
+  const [hasGenerated, setHasGenerated] = useState<boolean>(false);
+
+  function mapXsdToSql(xsdType?: string | null): string {
+    const t = (xsdType || '').toLowerCase();
+    const m: Record<string, string> = {
+      string: 'VARCHAR', normalizedstring: 'VARCHAR', token: 'VARCHAR', language: 'VARCHAR',
+      boolean: 'BOOLEAN', decimal: 'DECIMAL', integer: 'INTEGER', nonnegativeinteger: 'INTEGER', positiveinteger: 'INTEGER',
+      long: 'BIGINT', int: 'INTEGER', short: 'SMALLINT', byte: 'SMALLINT', float: 'FLOAT', double: 'DOUBLE',
+      date: 'DATE', datetime: 'TIMESTAMP', time: 'TIME', gyear: 'INTEGER', gyearmonth: 'VARCHAR', gmonthday: 'VARCHAR',
+      duration: 'VARCHAR', anyuri: 'VARCHAR', base64binary: 'BINARY', hexbinary: 'BINARY'
+    };
+    return m[t] || 'VARCHAR';
+  }
+
+  function deriveModelFromSchemaPreview(preview: any): StarSchemaModel | null {
+    try {
+      const elements = (preview?.elements ?? []) as any[];
+      if (!elements.length) return null;
+      const root = elements[0];
+      let repeated: any | null = null;
+      const others: any[] = [];
+      for (const ch of root?.children ?? []) {
+        const maxOccurs = String(ch?.maxOccurs ?? '1').toLowerCase();
+        if (!repeated && (maxOccurs === 'unbounded' || (maxOccurs && maxOccurs !== '1'))) {
+          repeated = ch;
+        } else {
+          others.push(ch);
+        }
+      }
+      const toCols = (el: any): any[] => {
+        const cols: any[] = [];
+        for (const a of el?.attributes ?? []) cols.push({ name: a, type: mapXsdToSql(el?.attributeDetails?.find((x: any) => x?.name === a)?.xsdType) });
+        if (!el?.children?.length) cols.push({ name: el?.name || 'value', type: mapXsdToSql(el?.xsdType) });
+        else for (const ch of el.children) cols.push(...toCols(ch));
+        return cols;
+      };
+      const factEl = repeated || root;
+      const fact = { name: factEl?.name || 'fact', columns: toCols(factEl) } as any;
+      const dimensions = others.map((d) => ({ name: d?.name || 'dim', columns: toCols(d) }));
+      return { fact, dimensions } as any;
+    } catch {
+      return null;
+    }
+  }
 
   function generateModelFromPrompt(text: string): StarSchemaModel {
     const lower = text.toLowerCase();
@@ -130,6 +174,7 @@ export default function DataModel() {
     const result = generateModelFromPrompt(prompt);
     setFactTableState(result.fact as any);
     setDimensionTablesState(result.dimensions as any);
+    setHasGenerated(true);
     toast({ title: "Model generated", description: "Updated model based on your prompt." });
   }
 
@@ -153,7 +198,27 @@ export default function DataModel() {
     try {
       const res = await apiGenerateModel();
       setBackendModel(res.model);
-      toast({ title: "Model generated", description: "Backend created a model from schema" });
+      if (res?.model) {
+        setFactTableState(res.model.fact as any);
+        setDimensionTablesState((res.model.dimensions || []) as any);
+      }
+      setHasGenerated(true);
+      let empty = !(res?.model?.fact?.columns?.length) && !(res?.model?.dimensions?.length);
+      if (empty) {
+        // Fallback: derive on the client from last uploaded schema preview
+        try {
+          const cached = localStorage.getItem('schemaPreview');
+          if (cached) {
+            const derived = deriveModelFromSchemaPreview(JSON.parse(cached));
+            if (derived) {
+              setFactTableState(derived.fact as any);
+              setDimensionTablesState(derived.dimensions as any);
+              empty = false;
+            }
+          }
+        } catch {}
+      }
+      toast({ title: "Model generated", description: empty ? "No fields detected. Upload metadata first, then generate." : "Backend created a model from schema" });
     } catch (e: any) {
       toast({ title: "Model error", description: e.message, variant: "destructive" });
     }
@@ -226,7 +291,13 @@ export default function DataModel() {
               <CardDescription>Interactive visualization of fact and dimension tables with relationships</CardDescription>
             </CardHeader>
             <CardContent>
-              <DataModelDiagram model={modelForDiagram} />
+              {hasGenerated ? (
+                <DataModelDiagram model={modelForDiagram} />
+              ) : (
+                <div className="w-full h-[300px] flex items-center justify-center text-sm text-muted-foreground">
+                  Click "Generate Model (Backend)" to visualize the model.
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -250,7 +321,7 @@ export default function DataModel() {
             <div>
               <CardTitle className="flex items-center gap-2">
                 <Database className="w-5 h-5 text-primary" />
-                {factTableState.name}
+                {hasGenerated ? factTableState.name : "No model yet"}
               </CardTitle>
               <CardDescription>Central fact table for sales promotion transactions</CardDescription>
             </div>
@@ -259,6 +330,7 @@ export default function DataModel() {
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
+            {hasGenerated ? (
             <table className="w-full">
               <thead>
                 <tr className="border-b border-border">
@@ -283,13 +355,18 @@ export default function DataModel() {
                 ))}
               </tbody>
             </table>
+            ) : (
+              <div className="w-full h-[120px] flex items-center justify-center text-sm text-muted-foreground">
+                No columns yet. Click "Generate Model (Backend)" above.
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
 
       {/* Dimension Tables */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {dimensionTablesState.map((table, idx) => (
+        {hasGenerated && dimensionTablesState.map((table, idx) => (
           <Card key={idx} className="shadow-card border-border">
             <CardHeader>
               <div className="flex items-center justify-between">

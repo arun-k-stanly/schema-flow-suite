@@ -6,76 +6,105 @@
       "attributes": [
         "orderid"
       ],
+      "attributeDetails": [
+        {
+          "name": "orderid",
+          "xsdType": "string"
+        }
+      ],
       "children": [
         {
           "name": "orderperson",
           "maxOccurs": null,
           "attributes": [],
-          "children": []
+          "attributeDetails": [],
+          "children": [],
+          "xsdType": "string"
         },
         {
           "name": "shipto",
           "maxOccurs": null,
           "attributes": [],
+          "attributeDetails": [],
           "children": [
             {
               "name": "name",
               "maxOccurs": null,
               "attributes": [],
-              "children": []
+              "attributeDetails": [],
+              "children": [],
+              "xsdType": "string"
             },
             {
               "name": "address",
               "maxOccurs": null,
               "attributes": [],
-              "children": []
+              "attributeDetails": [],
+              "children": [],
+              "xsdType": "string"
             },
             {
               "name": "city",
               "maxOccurs": null,
               "attributes": [],
-              "children": []
+              "attributeDetails": [],
+              "children": [],
+              "xsdType": "string"
             },
             {
               "name": "country",
               "maxOccurs": null,
               "attributes": [],
-              "children": []
+              "attributeDetails": [],
+              "children": [],
+              "xsdType": "string"
             }
-          ]
+          ],
+          "xsdType": null
         },
         {
           "name": "item",
           "maxOccurs": "unbounded",
           "attributes": [],
+          "attributeDetails": [],
           "children": [
             {
               "name": "title",
               "maxOccurs": null,
               "attributes": [],
-              "children": []
+              "attributeDetails": [],
+              "children": [],
+              "xsdType": "string"
             },
             {
               "name": "note",
               "maxOccurs": null,
               "attributes": [],
-              "children": []
+              "attributeDetails": [],
+              "children": [],
+              "xsdType": "string"
             },
             {
               "name": "quantity",
               "maxOccurs": null,
               "attributes": [],
-              "children": []
+              "attributeDetails": [],
+              "children": [],
+              "xsdType": "positiveInteger"
             },
             {
               "name": "price",
               "maxOccurs": null,
               "attributes": [],
-              "children": []
+              "attributeDetails": [],
+              "children": [],
+              "xsdType": "decimal"
             }
-          ]
+          ],
+          "xsdType": null
         }
-      ]
+      ],
+      "xsdType": null
     }
   ]
 }
