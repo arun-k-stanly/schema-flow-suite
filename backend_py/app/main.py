@@ -13,6 +13,7 @@ from .routers.generator import router as generator_router
 from .routers.modeling import router as modeling_router
 from .routers.codegen import router as codegen_router
 from .routers.deployments import router as deployments_router
+from .core.db import init_db
 
 
 def create_app() -> FastAPI:
@@ -28,6 +29,9 @@ def create_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+    # Initialize database (creates tables on first run)
+    init_db(create_all=True)
 
     # Routers
     api_prefix = settings.api_prefix

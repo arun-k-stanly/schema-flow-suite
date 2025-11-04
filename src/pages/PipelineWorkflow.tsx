@@ -115,19 +115,29 @@ export default function PipelineWorkflow() {
           >
             Previous Step
           </Button>
-          <Button
-            onClick={() => {
-              const nextIndex = currentStepIndex + 1;
-              if (nextIndex < workflowSteps.length) {
-                const nextId = workflowSteps[nextIndex].id;
-                setActiveStep(nextId);
-                setSearchParams({ step: nextId });
-              }
-            }}
-            disabled={currentStepIndex === workflowSteps.length - 1}
-          >
-            Next Step
-          </Button>
+          {currentStepIndex === workflowSteps.length - 1 ? (
+            <Button
+              onClick={() => {
+                // Finished: go back to this project's pipelines page
+                navigate(`/project/${projectId}`);
+              }}
+            >
+              Go to Project Pipelines
+            </Button>
+          ) : (
+            <Button
+              onClick={() => {
+                const nextIndex = currentStepIndex + 1;
+                if (nextIndex < workflowSteps.length) {
+                  const nextId = workflowSteps[nextIndex].id;
+                  setActiveStep(nextId);
+                  setSearchParams({ step: nextId });
+                }
+              }}
+            >
+              Next Step
+            </Button>
+          )}
         </div>
       </div>
     </div>

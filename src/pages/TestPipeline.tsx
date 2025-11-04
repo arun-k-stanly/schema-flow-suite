@@ -1,16 +1,18 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { PlayCircle, FileCode, CheckCircle2, AlertCircle, Clock } from "lucide-react";
+import { PlayCircle, FileCode, CheckCircle2, AlertCircle, Clock, Brain, Loader2 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
-import { apiPipelineTransform } from "@/lib/api";
+import { apiPipelineTransform, apiAgentAsk } from "@/lib/api";
 
 export default function TestPipeline() {
   const [isRunning, setIsRunning] = useState(false);
   const [progress, setProgress] = useState(0);
   const [testResults, setTestResults] = useState<any>(null);
   const [errorInfo, setErrorInfo] = useState<{ message: string; details?: string } | null>(null);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [aiAdvice, setAiAdvice] = useState<string | null>(null);
   const { toast } = useToast();
 
   const handleRunTest = async () => {
@@ -18,6 +20,7 @@ export default function TestPipeline() {
     setProgress(0);
     setTestResults(null);
     setErrorInfo(null);
+    setAiAdvice(null);
 
     // Start a lightweight transform on the backend while showing progress
     try {
@@ -56,6 +59,24 @@ export default function TestPipeline() {
   };
 
   // AI analysis removed
+  const handleAnalyze = async () => {
+    setAnalyzing(true);
+    try {
+      const prompt = [
+        "You are a senior Spark engineer. Analyze why a pipeline test failed and suggest the smallest code/config fix.",
+        `Observed error: ${errorInfo?.message || "unknown"}`,
+      ].join("\n\n");
+      const res = await apiAgentAsk("groq", { action: "analyze_pipeline_test", prompt });
+      const output = res?.output || res?.answer || res?.message || JSON.stringify(res);
+      setAiAdvice(String(output));
+      toast({ title: "AI Test Result", description: "Analysis completed" });
+    } catch (e: any) {
+      const msg = e?.message || String(e || "");
+      setAiAdvice(`AI analysis failed: ${msg}`);
+    } finally {
+      setAnalyzing(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -106,6 +127,19 @@ export default function TestPipeline() {
             >
               <PlayCircle className="w-4 h-4 mr-2" />
               {isRunning ? "Running (Interpreter)..." : "Run (Interpreter)"}
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              onClick={handleAnalyze}
+              disabled={analyzing}
+              className="w-full sm:w-auto"
+            >
+              {analyzing ? (
+                <span className="inline-flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" /> AI Test...</span>
+              ) : (
+                <span className="inline-flex items-center gap-2"><Brain className="w-4 h-4" /> Run (AI Test)</span>
+              )}
             </Button>
           </div>
         </CardContent>
@@ -195,7 +229,12 @@ export default function TestPipeline() {
               <p className="text-sm font-medium">Error</p>
               <p className="text-sm text-destructive mt-1">{errorInfo.message}</p>
             </div>
-            {/* AI analysis controls removed */}
+            {aiAdvice && (
+              <div className="mt-2 p-3 rounded border bg-muted">
+                <p className="text-sm font-medium mb-1">AI Result</p>
+                <p className="text-sm whitespace-pre-wrap">{aiAdvice}</p>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}

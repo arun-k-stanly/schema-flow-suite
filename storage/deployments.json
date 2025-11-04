@@ -1,0 +1,12 @@
+[
+  {
+    "id": "dep-1",
+    "project_id": "1",
+    "name": "Pipeline 2025-11-04T05:47:15.198Z",
+    "status": "deployed",
+    "prefect": {
+      "registered": false,
+      "reason": "prefect not installed"
+    }
+  }
+]

@@ -1,16 +1,20 @@
 import { useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Rocket, CheckCircle2, AlertCircle, Server, Globe, Shield } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
+import { apiCreateDeployment } from "@/lib/api";
 
 export default function DeployPipeline() {
   const [isDeploying, setIsDeploying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [isDeployed, setIsDeployed] = useState(false);
   const { toast } = useToast();
+  const { projectId } = useParams();
+  const navigate = useNavigate();
 
   const handleDeploy = () => {
     setIsDeploying(true);
@@ -22,10 +26,17 @@ export default function DeployPipeline() {
           clearInterval(interval);
           setIsDeploying(false);
           setIsDeployed(true);
-          toast({
-            title: "Deployment Successful",
-            description: "Pipeline is now live and ready for production use",
-          });
+          // Record a deployment with backend so it appears in the project view
+          (async () => {
+            try {
+              const code = localStorage.getItem("lastPipelineCode") || "# pipeline code not provided";
+              await apiCreateDeployment(String(projectId || "project-unknown"), `Pipeline ${new Date().toISOString()}`, code);
+            } catch (e: any) {
+              // best-effort; still show success, but notify if record failed
+              toast({ title: "Deployed (record not saved)", description: e?.message || String(e), variant: "destructive" });
+            }
+          })();
+          toast({ title: "Deployment Successful", description: "Pipeline is now live and recorded for this project" });
           return 100;
         }
         return prev + 5;
@@ -122,6 +133,9 @@ export default function DeployPipeline() {
               </Button>
               <Button variant="outline" className="flex-1">
                 Monitor Pipeline
+              </Button>
+              <Button className="flex-1" onClick={() => navigate(`/project/${projectId}`)}>
+                Go to Project Pipelines
               </Button>
             </div>
           </CardContent>

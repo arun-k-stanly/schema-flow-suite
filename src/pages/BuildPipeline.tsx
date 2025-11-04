@@ -12,7 +12,7 @@ import { apiGenerateModel, apiGenerateCode } from "@/lib/api";
 
 export default function BuildPipeline() {
   const { toast } = useToast();
-  const [code, setCode] = useState<string>("");
+  const [code, setCode] = useState<string>(localStorage.getItem("lastPipelineCode") || "");
   const [inputFormat, setInputFormat] = useState<'json' | 'xml' | 'csv' | 'parquet' | 'avro'>("json");
   const [inputPath, setInputPath] = useState<string>("input.json");
   const [csvHeader, setCsvHeader] = useState<boolean>(true);
@@ -47,6 +47,7 @@ export default function BuildPipeline() {
                 const adlsConfig = adlsEnabled ? { enabled: true, account_name: adlsAccount, account_key: adlsKey, container: adlsContainer } : undefined;
                 const res = await apiGenerateCode(model, inputFormat, inputPath, inputOptions, adlsConfig);
                 setCode(res.code);
+                try { localStorage.setItem("lastPipelineCode", res.code || ""); } catch {}
                 toast({ title: "Code generated", description: "PySpark ETL created" });
               } catch (e: any) {
                 toast({ title: "Generation failed", description: e.message, variant: "destructive" });
@@ -88,7 +89,7 @@ export default function BuildPipeline() {
                 <div className="bg-muted rounded-lg p-4">
                   <Textarea
                     value={code}
-                    onChange={(e) => setCode(e.target.value)}
+                    onChange={(e) => { setCode(e.target.value); try { localStorage.setItem("lastPipelineCode", e.target.value || ""); } catch {} }}
                     placeholder="Generated PySpark code will appear here. You can edit it manually."
                     className="min-h-[420px] font-mono text-xs"
                   />
