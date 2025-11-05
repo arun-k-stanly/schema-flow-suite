@@ -38,6 +38,7 @@ class PipelineOperation(BaseModel):
 class PipelineTransformRequest(BaseModel):
     rows: List[dict]
     ops: Optional[List[PipelineOperation]] = None
+    output_path: Optional[str] = None
 
 
 class ValidationRequest(BaseModel):
