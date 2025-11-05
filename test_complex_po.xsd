@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://example.com/purchaseorder"
+           xmlns:po="http://example.com/purchaseorder"
+           elementFormDefault="qualified">
+
+  <!-- Purchase Order Root Element -->
+  <xs:element name="PurchaseOrder" type="po:PurchaseOrderType"/>
+
+  <!-- Purchase Order Complex Type -->
+  <xs:complexType name="PurchaseOrderType">
+    <xs:sequence>
+      <xs:element name="OrderInfo" type="po:OrderInfoType"/>
+      <xs:element name="Customer" type="po:CustomerType"/>
+      <xs:element name="Supplier" type="po:SupplierType"/>
+      <xs:element name="ShippingAddress" type="po:AddressType"/>
+      <xs:element name="BillingAddress" type="po:AddressType"/>
+      <xs:element name="Items" type="po:ItemsType"/>
+      <xs:element name="PaymentTerms" type="po:PaymentTermsType"/>
+      <xs:element name="SpecialInstructions" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attribute name="orderID" type="xs:string" use="required"/>
+    <xs:attribute name="version" type="xs:decimal" use="optional" default="1.0"/>
+  </xs:complexType>
+
+  <!-- Order Information -->
+  <xs:complexType name="OrderInfoType">
+    <xs:sequence>
+      <xs:element name="OrderDate" type="xs:date"/>
+      <xs:element name="RequiredDate" type="xs:date"/>
+      <xs:element name="Priority" type="po:PriorityType"/>
+      <xs:element name="Currency" type="po:CurrencyType"/>
+      <xs:element name="ExchangeRate" type="xs:decimal" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- Priority Enumeration -->
+  <xs:simpleType name="PriorityType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Low"/>
+      <xs:enumeration value="Medium"/>
+      <xs:enumeration value="High"/>
+      <xs:enumeration value="Urgent"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- Currency Enumeration -->
+  <xs:simpleType name="CurrencyType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="USD"/>
+      <xs:enumeration value="EUR"/>
+      <xs:enumeration value="GBP"/>
+      <xs:enumeration value="JPY"/>
+      <xs:enumeration value="CAD"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- Customer Type -->
+  <xs:complexType name="CustomerType">
+    <xs:sequence>
+      <xs:element name="CompanyName" type="xs:string"/>
+      <xs:element name="ContactPerson" type="po:PersonType"/>
+      <xs:element name="CustomerID" type="xs:string"/>
+      <xs:element name="TaxID" type="xs:string" minOccurs="0"/>
+      <xs:element name="CreditLimit" type="xs:decimal" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- Supplier Type -->
+  <xs:complexType name="SupplierType">
+    <xs:sequence>
+      <xs:element name="CompanyName" type="xs:string"/>
+      <xs:element name="ContactPerson" type="po:PersonType"/>
+      <xs:element name="SupplierID" type="xs:string"/>
+      <xs:element name="TaxID" type="xs:string"/>
+      <xs:element name="BankDetails" type="po:BankDetailsType"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- Person Type -->
+  <xs:complexType name="PersonType">
+    <xs:sequence>
+      <xs:element name="FirstName" type="xs:string"/>
+      <xs:element name="LastName" type="xs:string"/>
+      <xs:element name="Title" type="xs:string" minOccurs="0"/>
+      <xs:element name="Email" type="xs:string"/>
+      <xs:element name="Phone" type="xs:string"/>
+      <xs:element name="Mobile" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- Bank Details Type -->
+  <xs:complexType name="BankDetailsType">
+    <xs:sequence>
+      <xs:element name="BankName" type="xs:string"/>
+      <xs:element name="AccountNumber" type="xs:string"/>
+      <xs:element name="RoutingNumber" type="xs:string"/>
+      <xs:element name="IBAN" type="xs:string" minOccurs="0"/>
+      <xs:element name="SWIFT" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- Address Type -->
+  <xs:complexType name="AddressType">
+    <xs:sequence>
+      <xs:element name="Street1" type="xs:string"/>
+      <xs:element name="Street2" type="xs:string" minOccurs="0"/>
+      <xs:element name="City" type="xs:string"/>
+      <xs:element name="State" type="xs:string"/>
+      <xs:element name="PostalCode" type="xs:string"/>
+      <xs:element name="Country" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- Items Container -->
+  <xs:complexType name="ItemsType">
+    <xs:sequence>
+      <xs:element name="Item" type="po:ItemType" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- Individual Item -->
+  <xs:complexType name="ItemType">
+    <xs:sequence>
+      <xs:element name="SKU" type="xs:string"/>
+      <xs:element name="ProductName" type="xs:string"/>
+      <xs:element name="Description" type="xs:string"/>
+      <xs:element name="Category" type="xs:string"/>
+      <xs:element name="Quantity" type="xs:positiveInteger"/>
+      <xs:element name="Unit" type="po:UnitType"/>
+      <xs:element name="UnitPrice" type="xs:decimal"/>
+      <xs:element name="Discount" type="po:DiscountType" minOccurs="0"/>
+      <xs:element name="TaxRate" type="xs:decimal"/>
+      <xs:element name="DeliveryDate" type="xs:date" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attribute name="itemID" type="xs:string" use="required"/>
+  </xs:complexType>
+
+  <!-- Unit Type -->
+  <xs:simpleType name="UnitType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="piece"/>
+      <xs:enumeration value="box"/>
+      <xs:enumeration value="kg"/>
+      <xs:enumeration value="liter"/>
+      <xs:enumeration value="meter"/>
+      <xs:enumeration value="dozen"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- Discount Type -->
+  <xs:complexType name="DiscountType">
+    <xs:sequence>
+      <xs:element name="DiscountPercent" type="xs:decimal" minOccurs="0"/>
+      <xs:element name="DiscountAmount" type="xs:decimal" minOccurs="0"/>
+      <xs:element name="DiscountReason" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- Payment Terms -->
+  <xs:complexType name="PaymentTermsType">
+    <xs:sequence>
+      <xs:element name="PaymentMethod" type="po:PaymentMethodType"/>
+      <xs:element name="PaymentDueDate" type="xs:date"/>
+      <xs:element name="EarlyPaymentDiscount" type="xs:decimal" minOccurs="0"/>
+      <xs:element name="LatePaymentPenalty" type="xs:decimal" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- Payment Method -->
+  <xs:simpleType name="PaymentMethodType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Credit Card"/>
+      <xs:enumeration value="Bank Transfer"/>
+      <xs:enumeration value="Check"/>
+      <xs:enumeration value="Cash"/>
+      <xs:enumeration value="Letter of Credit"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+</xs:schema>

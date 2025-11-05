@@ -7,6 +7,7 @@ from ..agents.data_model_agent import DataModelAgent
 from ..agents.pipeline_agent import PipelineAgent
 from ..agents.validation_agent import ValidationAgent
 from ..agents.project_agent import ProjectAgent
+from ..agents.sample_data_agent import SampleDataAgent
 from ..core.groq_client import GroqClient
 from ..models.schemas import AgentAskRequest
 
@@ -30,6 +31,8 @@ def ask(req: AgentAskRequest):
         agent = ValidationAgent(name="validation", groq_client=_groq_client)
     elif agent_name == "project":
         agent = ProjectAgent(groq_client=_groq_client)
+    elif agent_name == "sample_data":
+        agent = SampleDataAgent(name="sample_data", groq_client=_groq_client)
     else:
         raise HTTPException(status_code=400, detail=f"Unknown agent: {req.agent}")
 

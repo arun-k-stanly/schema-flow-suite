@@ -49,3 +49,23 @@ def create_deployment(req: DeploymentCreate):
     return record
 
 
+@router.put("/{deployment_id}")
+def update_deployment(deployment_id: str, req: DeploymentCreate):
+    data = read_json("deployments.json") or []
+    deployment = None
+    for i, d in enumerate(data):
+        if d.get("id") == deployment_id:
+            deployment = d
+            deployment["name"] = req.name
+            deployment["project_id"] = req.project_id
+            if req.code:
+                deployment["code"] = req.code
+            break
+    
+    if not deployment:
+        return {"error": "deployment not found"}
+    
+    write_json("deployments.json", data)
+    return deployment
+
+

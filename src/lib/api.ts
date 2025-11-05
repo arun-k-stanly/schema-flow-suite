@@ -5,7 +5,7 @@ const API_BASE = (() => {
   return `http://${hostname}:8001/api`;
 })();
 
-type HttpMethod = 'GET' | 'POST' | 'DELETE';
+type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
 
 async function request<T>(path: string, method: HttpMethod = 'GET', body?: any): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {
@@ -31,6 +31,10 @@ export async function apiCreateProject(item: { id: string; name: string; descrip
 
 export async function apiDeleteProject(projectId: string): Promise<{ deleted: string }> {
   return request<{ deleted: string }>(`/projects/${projectId}`, 'DELETE');
+}
+
+export async function apiUpdateProject(projectId: string, item: { name: string; description?: string }): Promise<any> {
+  return request<any>(`/projects/${projectId}`, 'PUT', item);
 }
 
 // Validation
@@ -70,12 +74,12 @@ export async function apiParseMetadata(format: string, file: File): Promise<{ fo
 }
 
 // Generate sample data
-export async function apiGenerateSample(params: { format: string; count: number; variation?: string; schema?: any }): Promise<any> {
+export async function apiGenerateSample(params: { format: string; count: number; variation?: string; schema?: any; context?: string }): Promise<any> {
   return request(`/generate/sample`, 'POST', params);
 }
 
 // Model generation from saved schema
-export async function apiGenerateModel(body?: { prompt?: string; schema?: any; sampleRows?: any[] }): Promise<{ model: any }> {
+export async function apiGenerateModel(body?: { prompt?: string; schema?: any; sampleRows?: any[]; schemaType?: string }): Promise<{ model: any }> {
   return request(`/model/generate`, 'POST', body || {});
 }
 
@@ -105,6 +109,10 @@ export async function apiCreateDeployment(projectId: string, name: string, code:
 export async function apiListDeployments(projectId: string): Promise<any[]> {
   const query = encodeURIComponent(projectId);
   return request(`/deployments?project_id=${query}`, 'GET');
+}
+
+export async function apiUpdateDeployment(deploymentId: string, item: { project_id: string; name: string; code?: string }): Promise<any> {
+  return request<any>(`/deployments/${deploymentId}`, 'PUT', item);
 }
 
 

@@ -49,3 +49,17 @@ def delete_project(project_id: str, db: Session = Depends(get_db)) -> dict:
     return {"deleted": project_id}
 
 
+@router.put("/{project_id}")
+def update_project(project_id: str, req: ProjectCreate, db: Session = Depends(get_db)) -> dict:
+    existing = db.get(Project, project_id)
+    if not existing:
+        raise HTTPException(status_code=404, detail="project not found")
+    existing.name = req.name
+    if req.description is not None:
+        existing.description = req.description
+    db.add(existing)
+    db.commit()
+    db.refresh(existing)
+    return {"id": existing.id, "name": existing.name, "description": existing.description}
+
+

@@ -1,37 +1,49 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { FolderOpen, Plus, GitBranch, FileCode } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { FolderOpen, Plus, GitBranch, Trash2, Edit2, Check, X } from "lucide-react";
 import { Link } from "react-router-dom";
-
-const projects = [
-  {
-    id: 1,
-    name: "Sales Promotion Analytics",
-    description: "End-to-end sales promotion data pipeline",
-    pipelines: 3,
-    lastUpdated: "2 hours ago",
-    status: "active"
-  },
-  {
-    id: 2,
-    name: "Customer Behavior Analysis",
-    description: "Customer segmentation and behavior tracking",
-    pipelines: 2,
-    lastUpdated: "1 day ago",
-    status: "active"
-  },
-  {
-    id: 3,
-    name: "Inventory Management",
-    description: "Real-time inventory tracking and forecasting",
-    pipelines: 1,
-    lastUpdated: "3 days ago",
-    status: "inactive"
-  }
-];
+import { useState, useEffect } from "react";
+import { apiListProjects, apiUpdateProject } from "@/lib/api";
 
 export default function Projects() {
+  const [projects, setProjects] = useState<any[]>([]);
+  const [editingProject, setEditingProject] = useState<string | null>(null);
+  const [editingName, setEditingName] = useState("");
+
+  useEffect(() => {
+    apiListProjects().then(setProjects).catch(() => setProjects([]));
+  }, []);
+
+  const handleEditStart = (projectId: string, currentName: string) => {
+    setEditingProject(projectId);
+    setEditingName(currentName);
+  };
+
+  const handleEditSave = async (projectId: string) => {
+    try {
+      await apiUpdateProject(projectId, { name: editingName });
+      // Update local state
+      setProjects(prevProjects => 
+        prevProjects.map(project => 
+          project.id === projectId 
+            ? { ...project, name: editingName }
+            : project
+        )
+      );
+      setEditingProject(null);
+      setEditingName("");
+    } catch (error) {
+      console.error("Failed to update project name:", error);
+    }
+  };
+
+  const handleEditCancel = () => {
+    setEditingProject(null);
+    setEditingName("");
+  };
+
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
@@ -48,7 +60,7 @@ export default function Projects() {
       {/* Projects Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {projects.map((project) => (
-          <Card key={project.id} className="shadow-card border-border hover:shadow-lg transition-shadow">
+          <Card key={project.id} className="group shadow-card border-border hover:shadow-lg transition-shadow">
             <CardHeader>
               <div className="flex items-start justify-between">
                 <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-3">
@@ -58,7 +70,40 @@ export default function Projects() {
                   {project.status}
                 </Badge>
               </div>
-              <CardTitle className="text-xl">{project.name}</CardTitle>
+              <div className="flex items-center gap-2">
+                {editingProject === project.id ? (
+                  <div className="flex items-center gap-2 flex-1">
+                    <Input
+                      value={editingName}
+                      onChange={(e) => setEditingName(e.target.value)}
+                      className="text-xl font-semibold"
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") handleEditSave(project.id);
+                        if (e.key === "Escape") handleEditCancel();
+                      }}
+                      autoFocus
+                    />
+                    <Button size="sm" variant="ghost" onClick={() => handleEditSave(project.id)}>
+                      <Check className="w-4 h-4" />
+                    </Button>
+                    <Button size="sm" variant="ghost" onClick={handleEditCancel}>
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 flex-1">
+                    <CardTitle className="text-xl">{project.name}</CardTitle>
+                    <Button 
+                      size="sm" 
+                      variant="ghost" 
+                      onClick={() => handleEditStart(project.id, project.name)}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <Edit2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                )}
+              </div>
               <CardDescription>{project.description}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -75,8 +120,13 @@ export default function Projects() {
                     View Pipelines
                   </Link>
                 </Button>
-                <Button variant="outline" size="icon">
-                  <FileCode className="w-4 h-4" />
+                <Button 
+                  variant="outline" 
+                  size="icon" 
+                  className="hover:bg-destructive hover:text-destructive-foreground transition-colors"
+                  title="Delete Project"
+                >
+                  <Trash2 className="w-4 h-4" />
                 </Button>
               </div>
             </CardContent>

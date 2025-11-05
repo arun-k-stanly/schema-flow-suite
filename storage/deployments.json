@@ -8,5 +8,25 @@
       "registered": false,
       "reason": "prefect not installed"
     }
+  },
+  {
+    "id": "dep-2",
+    "project_id": "1",
+    "name": "Pipeline 2025-11-04T12:04:27.356Z",
+    "status": "deployed",
+    "prefect": {
+      "registered": false,
+      "reason": "prefect not installed"
+    }
+  },
+  {
+    "id": "dep-3",
+    "project_id": "1",
+    "name": "Pipeline 2025-11-05T06:38:25.852Z",
+    "status": "deployed",
+    "prefect": {
+      "registered": false,
+      "reason": "prefect not installed"
+    }
   }
 ]

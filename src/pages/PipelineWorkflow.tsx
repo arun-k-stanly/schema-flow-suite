@@ -27,6 +27,7 @@ export default function PipelineWorkflow() {
   const initialStepParam = searchParams.get("step") || "";
   const initialStep = stepIds.includes(initialStepParam) ? initialStepParam : "upload";
   const [activeStep, setActiveStep] = useState(initialStep);
+  const pipelineName = searchParams.get("name") || "";
 
   useEffect(() => {
     const stepParam = searchParams.get("step") || "";
@@ -48,7 +49,10 @@ export default function PipelineWorkflow() {
         </Button>
         <div className="flex-1">
           <h2 className="text-2xl font-bold">
-            {pipelineId === "new" ? "Create New Pipeline" : "Pipeline Workflow"}
+            {pipelineId === "new" 
+              ? (pipelineName ? `Create Pipeline: ${pipelineName}` : "Create New Pipeline")
+              : "Pipeline Workflow"
+            }
           </h2>
           <p className="text-sm text-muted-foreground">
             Complete all steps to build and deploy your data pipeline

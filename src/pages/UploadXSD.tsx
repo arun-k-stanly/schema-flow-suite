@@ -1,10 +1,136 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Upload, FileText, Check, AlertCircle } from "lucide-react";
+import { Upload, FileText, Check, AlertCircle, ChevronRight, ChevronDown } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { apiParseMetadata } from "@/lib/api";
+
+// Schema Element Viewer Component
+interface SchemaElementViewProps {
+  element: any;
+  depth: number;
+  isComplexType?: boolean;
+}
+
+function SchemaElementView({ element, depth, isComplexType = false }: SchemaElementViewProps) {
+  const [isExpanded, setIsExpanded] = useState(depth < 2); // Auto-expand first 2 levels
+  
+  const hasChildren = element.children && element.children.length > 0;
+  const hasAttributes = element.attributeDetails && element.attributeDetails.length > 0;
+  const hasContent = hasChildren || hasAttributes;
+  
+  const getTypeDisplay = (xsdType: string) => {
+    if (xsdType === 'complexType') return 'Complex';
+    if (!xsdType || xsdType === 'unknown') return 'Unknown';
+    return xsdType;
+  };
+  
+  const getTypeColor = (xsdType: string) => {
+    if (xsdType === 'complexType') return 'text-blue-600 dark:text-blue-400';
+    if (xsdType === 'string') return 'text-green-600 dark:text-green-400';
+    if (['decimal', 'integer', 'positiveInteger', 'int'].includes(xsdType)) return 'text-orange-600 dark:text-orange-400';
+    if (xsdType === 'date') return 'text-purple-600 dark:text-purple-400';
+    return 'text-gray-600 dark:text-gray-400';
+  };
+
+  return (
+    <div className={`${depth > 0 ? 'ml-4' : ''}`}>
+      <div 
+        className={`p-3 rounded-lg border-l-4 ${
+          isComplexType 
+            ? 'bg-purple-50 dark:bg-purple-950/20 border-purple-500' 
+            : 'bg-muted border-primary'
+        } ${hasContent ? 'cursor-pointer' : ''}`}
+        onClick={hasContent ? () => setIsExpanded(!isExpanded) : undefined}
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            {hasContent && (
+              <div className="w-4 h-4 flex items-center justify-center">
+                {isExpanded ? (
+                  <ChevronDown className="w-3 h-3 text-muted-foreground" />
+                ) : (
+                  <ChevronRight className="w-3 h-3 text-muted-foreground" />
+                )}
+              </div>
+            )}
+            <div>
+              <span className="font-mono text-sm font-medium">{element.name}</span>
+              {isComplexType && (
+                <span className="ml-2 text-xs px-2 py-1 bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 rounded">
+                  Type
+                </span>
+              )}
+              {element.isReference && (
+                <span className="ml-2 text-xs px-2 py-1 bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded">
+                  Ref
+                </span>
+              )}
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-2 text-xs">
+            <span className={`font-mono ${getTypeColor(element.xsdType)}`}>
+              {getTypeDisplay(element.xsdType)}
+            </span>
+            {element.maxOccurs && (
+              <span className="px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded">
+                {element.maxOccurs === 'unbounded' ? '∞' : `≤${element.maxOccurs}`}
+              </span>
+            )}
+            {element.minOccurs === '0' && (
+              <span className="px-2 py-1 bg-orange-100 dark:bg-orange-900/50 text-orange-600 dark:text-orange-400 rounded">
+                Optional
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Expanded Content */}
+      {isExpanded && hasContent && (
+        <div className="mt-2 ml-6 space-y-2">
+          {/* Attributes */}
+          {hasAttributes && (
+            <div className="space-y-1">
+              <p className="text-xs font-medium text-muted-foreground">Attributes:</p>
+              {element.attributeDetails.map((attr: any, idx: number) => (
+                <div key={idx} className="flex items-center justify-between p-2 bg-yellow-50 dark:bg-yellow-950/20 rounded border border-yellow-200 dark:border-yellow-800">
+                  <span className="font-mono text-xs">@{attr.name}</span>
+                  <div className="flex items-center gap-2 text-xs">
+                    <span className={`font-mono ${getTypeColor(attr.xsdType)}`}>
+                      {getTypeDisplay(attr.xsdType)}
+                    </span>
+                    {attr.fixed && (
+                      <span className="px-1 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded">
+                        ={attr.fixed}
+                      </span>
+                    )}
+                    {attr.use === 'required' && (
+                      <span className="px-1 py-0.5 bg-red-100 dark:bg-red-900/50 text-red-600 dark:text-red-400 rounded">
+                        Required
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Child Elements */}
+          {hasChildren && (
+            <div className="space-y-1">
+              {element.children.map((child: any, idx: number) => (
+                <SchemaElementView key={idx} element={child} depth={depth + 1} />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function UploadXSD() {
   const [file, setFile] = useState<File | null>(null);
@@ -135,28 +261,34 @@ export default function UploadXSD() {
           </CardHeader>
           <CardContent>
             {isUploaded && preview ? (
-              <div className="space-y-3">
-                {(preview.elements || []).map((el: any, idx: number) => (
-                  <div key={idx} className="p-3 bg-muted rounded-lg border-l-4 border-primary">
-                    <p className="font-mono text-sm font-medium">{el.name}</p>
-                    {el.children && el.children.length > 0 ? (
-                      <div className="ml-4 mt-2 space-y-1">
-                        {el.children.map((c: any, cidx: number) => {
-                          const label = typeof c === 'string' ? c : (c?.name ?? '');
-                          return (
-                            <div key={cidx} className="p-2 bg-muted/50 rounded">
-                              <p className="font-mono text-xs">{label}</p>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    ) : (
-                      <p className="text-xs text-muted-foreground">No child elements detected</p>
-                    )}
+              <div className="space-y-4">
+                {/* Target Namespace Info */}
+                {preview.targetNamespace && (
+                  <div className="p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                    <p className="text-xs font-medium text-blue-700 dark:text-blue-300 mb-1">Target Namespace</p>
+                    <p className="font-mono text-xs text-blue-600 dark:text-blue-400">{preview.targetNamespace}</p>
                   </div>
-                ))}
-                {(preview.elements || []).length === 0 && (
-                  <p className="text-sm text-muted-foreground">No top-level elements found.</p>
+                )}
+
+                {/* Top-level Elements */}
+                <div className="space-y-3">
+                  <h4 className="font-medium text-sm">Elements ({(preview.elements || []).length})</h4>
+                  {(preview.elements || []).map((el: any, idx: number) => (
+                    <SchemaElementView key={idx} element={el} depth={0} />
+                  ))}
+                  {(preview.elements || []).length === 0 && (
+                    <p className="text-sm text-muted-foreground">No top-level elements found.</p>
+                  )}
+                </div>
+
+                {/* Complex Types */}
+                {preview.complexTypes && preview.complexTypes.length > 0 && (
+                  <div className="space-y-3">
+                    <h4 className="font-medium text-sm">Complex Types ({preview.complexTypes.length})</h4>
+                    {preview.complexTypes.map((ct: any, idx: number) => (
+                      <SchemaElementView key={idx} element={ct} depth={0} isComplexType={true} />
+                    ))}
+                  </div>
                 )}
               </div>
             ) : (

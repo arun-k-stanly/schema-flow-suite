@@ -1,43 +1,66 @@
 {
   "elements": [
     {
-      "name": "shiporder",
+      "name": "comment",
       "maxOccurs": null,
+      "minOccurs": null,
+      "attributes": [],
+      "attributeDetails": [],
+      "children": [],
+      "xsdType": "string"
+    },
+    {
+      "name": "purchaseOrder",
+      "maxOccurs": null,
+      "minOccurs": null,
       "attributes": [
-        "orderid"
+        "orderDate",
+        "confirmDate"
       ],
       "attributeDetails": [
         {
-          "name": "orderid",
-          "xsdType": "string"
+          "name": "orderDate",
+          "xsdType": "date",
+          "fixed": null,
+          "use": "optional"
+        },
+        {
+          "name": "confirmDate",
+          "xsdType": "date",
+          "fixed": null,
+          "use": "required"
         }
       ],
       "children": [
         {
-          "name": "orderperson",
+          "name": "shipTo",
           "maxOccurs": null,
-          "attributes": [],
-          "attributeDetails": [],
-          "children": [],
-          "xsdType": "string"
-        },
-        {
-          "name": "shipto",
-          "maxOccurs": null,
-          "attributes": [],
-          "attributeDetails": [],
+          "minOccurs": null,
+          "attributes": [
+            "country"
+          ],
+          "attributeDetails": [
+            {
+              "name": "country",
+              "xsdType": "NMTOKEN",
+              "fixed": "US",
+              "use": "optional"
+            }
+          ],
           "children": [
             {
               "name": "name",
               "maxOccurs": null,
+              "minOccurs": null,
               "attributes": [],
               "attributeDetails": [],
               "children": [],
               "xsdType": "string"
             },
             {
-              "name": "address",
+              "name": "street",
               "maxOccurs": null,
+              "minOccurs": null,
               "attributes": [],
               "attributeDetails": [],
               "children": [],
@@ -46,39 +69,181 @@
             {
               "name": "city",
               "maxOccurs": null,
+              "minOccurs": null,
               "attributes": [],
               "attributeDetails": [],
               "children": [],
               "xsdType": "string"
             },
             {
-              "name": "country",
+              "name": "state",
               "maxOccurs": null,
+              "minOccurs": null,
               "attributes": [],
               "attributeDetails": [],
               "children": [],
               "xsdType": "string"
+            },
+            {
+              "name": "zip",
+              "maxOccurs": null,
+              "minOccurs": null,
+              "attributes": [],
+              "attributeDetails": [],
+              "children": [],
+              "xsdType": "decimal"
             }
           ],
-          "xsdType": null
+          "xsdType": "complexType"
         },
         {
-          "name": "item",
-          "maxOccurs": "unbounded",
+          "name": "billTo",
+          "maxOccurs": null,
+          "minOccurs": null,
+          "attributes": [
+            "country"
+          ],
+          "attributeDetails": [
+            {
+              "name": "country",
+              "xsdType": "NMTOKEN",
+              "fixed": "US",
+              "use": "optional"
+            }
+          ],
+          "children": [
+            {
+              "name": "name",
+              "maxOccurs": null,
+              "minOccurs": null,
+              "attributes": [],
+              "attributeDetails": [],
+              "children": [],
+              "xsdType": "string"
+            },
+            {
+              "name": "street",
+              "maxOccurs": null,
+              "minOccurs": null,
+              "attributes": [],
+              "attributeDetails": [],
+              "children": [],
+              "xsdType": "string"
+            },
+            {
+              "name": "city",
+              "maxOccurs": null,
+              "minOccurs": null,
+              "attributes": [],
+              "attributeDetails": [],
+              "children": [],
+              "xsdType": "string"
+            },
+            {
+              "name": "state",
+              "maxOccurs": null,
+              "minOccurs": null,
+              "attributes": [],
+              "attributeDetails": [],
+              "children": [],
+              "xsdType": "string"
+            },
+            {
+              "name": "zip",
+              "maxOccurs": null,
+              "minOccurs": null,
+              "attributes": [],
+              "attributeDetails": [],
+              "children": [],
+              "xsdType": "decimal"
+            }
+          ],
+          "xsdType": "complexType"
+        },
+        {
+          "name": "comment",
+          "maxOccurs": null,
+          "minOccurs": null,
+          "attributes": [],
+          "attributeDetails": [],
+          "children": [],
+          "xsdType": "string"
+        },
+        {
+          "name": "items",
+          "maxOccurs": null,
+          "minOccurs": null,
           "attributes": [],
           "attributeDetails": [],
           "children": [
             {
-              "name": "title",
-              "maxOccurs": null,
-              "attributes": [],
-              "attributeDetails": [],
-              "children": [],
-              "xsdType": "string"
+              "name": "item",
+              "maxOccurs": "unbounded",
+              "minOccurs": "0",
+              "attributes": [
+                "partNum"
+              ],
+              "attributeDetails": [
+                {
+                  "name": "partNum",
+                  "xsdType": "SKU",
+                  "fixed": null,
+                  "use": "optional"
+                }
+              ],
+              "children": [
+                {
+                  "name": "productName",
+                  "maxOccurs": null,
+                  "minOccurs": null,
+                  "attributes": [],
+                  "attributeDetails": [],
+                  "children": [],
+                  "xsdType": "string"
+                },
+                {
+                  "name": "quantity",
+                  "maxOccurs": null,
+                  "minOccurs": null,
+                  "attributes": [],
+                  "attributeDetails": [],
+                  "children": [],
+                  "xsdType": "positiveInteger"
+                },
+                {
+                  "name": "USPrice",
+                  "maxOccurs": null,
+                  "minOccurs": null,
+                  "attributes": [],
+                  "attributeDetails": [],
+                  "children": [],
+                  "xsdType": "decimal"
+                },
+                {
+                  "name": "comment",
+                  "maxOccurs": null,
+                  "minOccurs": null,
+                  "attributes": [],
+                  "attributeDetails": [],
+                  "children": [],
+                  "xsdType": "string"
+                },
+                {
+                  "name": "shipDate",
+                  "maxOccurs": null,
+                  "minOccurs": "0",
+                  "attributes": [],
+                  "attributeDetails": [],
+                  "children": [],
+                  "xsdType": "date"
+                }
+              ],
+              "xsdType": "complexType"
             },
             {
-              "name": "note",
+              "name": "productName",
               "maxOccurs": null,
+              "minOccurs": null,
               "attributes": [],
               "attributeDetails": [],
               "children": [],
@@ -87,24 +252,507 @@
             {
               "name": "quantity",
               "maxOccurs": null,
+              "minOccurs": null,
               "attributes": [],
               "attributeDetails": [],
               "children": [],
               "xsdType": "positiveInteger"
             },
             {
-              "name": "price",
+              "name": "USPrice",
               "maxOccurs": null,
+              "minOccurs": null,
+              "attributes": [],
+              "attributeDetails": [],
+              "children": [],
+              "xsdType": "decimal"
+            },
+            {
+              "name": "comment",
+              "maxOccurs": null,
+              "minOccurs": null,
+              "attributes": [],
+              "attributeDetails": [],
+              "children": [],
+              "xsdType": "string"
+            },
+            {
+              "name": "shipDate",
+              "maxOccurs": null,
+              "minOccurs": "0",
+              "attributes": [],
+              "attributeDetails": [],
+              "children": [],
+              "xsdType": "date"
+            }
+          ],
+          "xsdType": "complexType"
+        }
+      ],
+      "xsdType": "complexType"
+    }
+  ],
+  "complexTypes": [
+    {
+      "name": "USAddress",
+      "attributes": [
+        "country"
+      ],
+      "attributeDetails": [
+        {
+          "name": "country",
+          "xsdType": "NMTOKEN",
+          "fixed": "US",
+          "use": "optional"
+        }
+      ],
+      "children": [
+        {
+          "name": "name",
+          "maxOccurs": null,
+          "minOccurs": null,
+          "attributes": [],
+          "attributeDetails": [],
+          "children": [],
+          "xsdType": "string"
+        },
+        {
+          "name": "street",
+          "maxOccurs": null,
+          "minOccurs": null,
+          "attributes": [],
+          "attributeDetails": [],
+          "children": [],
+          "xsdType": "string"
+        },
+        {
+          "name": "city",
+          "maxOccurs": null,
+          "minOccurs": null,
+          "attributes": [],
+          "attributeDetails": [],
+          "children": [],
+          "xsdType": "string"
+        },
+        {
+          "name": "state",
+          "maxOccurs": null,
+          "minOccurs": null,
+          "attributes": [],
+          "attributeDetails": [],
+          "children": [],
+          "xsdType": "string"
+        },
+        {
+          "name": "zip",
+          "maxOccurs": null,
+          "minOccurs": null,
+          "attributes": [],
+          "attributeDetails": [],
+          "children": [],
+          "xsdType": "decimal"
+        }
+      ],
+      "xsdType": "complexType"
+    },
+    {
+      "name": "Items",
+      "attributes": [],
+      "attributeDetails": [],
+      "children": [
+        {
+          "name": "item",
+          "maxOccurs": "unbounded",
+          "minOccurs": "0",
+          "attributes": [
+            "partNum"
+          ],
+          "attributeDetails": [
+            {
+              "name": "partNum",
+              "xsdType": "SKU",
+              "fixed": null,
+              "use": "optional"
+            }
+          ],
+          "children": [
+            {
+              "name": "productName",
+              "maxOccurs": null,
+              "minOccurs": null,
+              "attributes": [],
+              "attributeDetails": [],
+              "children": [],
+              "xsdType": "string"
+            },
+            {
+              "name": "quantity",
+              "maxOccurs": null,
+              "minOccurs": null,
+              "attributes": [],
+              "attributeDetails": [],
+              "children": [],
+              "xsdType": "positiveInteger"
+            },
+            {
+              "name": "USPrice",
+              "maxOccurs": null,
+              "minOccurs": null,
+              "attributes": [],
+              "attributeDetails": [],
+              "children": [],
+              "xsdType": "decimal"
+            },
+            {
+              "name": "comment",
+              "maxOccurs": null,
+              "minOccurs": null,
+              "attributes": [],
+              "attributeDetails": [],
+              "children": [],
+              "xsdType": "string"
+            },
+            {
+              "name": "shipDate",
+              "maxOccurs": null,
+              "minOccurs": "0",
+              "attributes": [],
+              "attributeDetails": [],
+              "children": [],
+              "xsdType": "date"
+            }
+          ],
+          "xsdType": "complexType"
+        },
+        {
+          "name": "productName",
+          "maxOccurs": null,
+          "minOccurs": null,
+          "attributes": [],
+          "attributeDetails": [],
+          "children": [],
+          "xsdType": "string"
+        },
+        {
+          "name": "quantity",
+          "maxOccurs": null,
+          "minOccurs": null,
+          "attributes": [],
+          "attributeDetails": [],
+          "children": [],
+          "xsdType": "positiveInteger"
+        },
+        {
+          "name": "USPrice",
+          "maxOccurs": null,
+          "minOccurs": null,
+          "attributes": [],
+          "attributeDetails": [],
+          "children": [],
+          "xsdType": "decimal"
+        },
+        {
+          "name": "comment",
+          "maxOccurs": null,
+          "minOccurs": null,
+          "attributes": [],
+          "attributeDetails": [],
+          "children": [],
+          "xsdType": "string"
+        },
+        {
+          "name": "shipDate",
+          "maxOccurs": null,
+          "minOccurs": "0",
+          "attributes": [],
+          "attributeDetails": [],
+          "children": [],
+          "xsdType": "date"
+        }
+      ],
+      "xsdType": "complexType"
+    },
+    {
+      "name": "PurchaseOrderType",
+      "attributes": [
+        "orderDate",
+        "confirmDate"
+      ],
+      "attributeDetails": [
+        {
+          "name": "orderDate",
+          "xsdType": "date",
+          "fixed": null,
+          "use": "optional"
+        },
+        {
+          "name": "confirmDate",
+          "xsdType": "date",
+          "fixed": null,
+          "use": "required"
+        }
+      ],
+      "children": [
+        {
+          "name": "shipTo",
+          "maxOccurs": null,
+          "minOccurs": null,
+          "attributes": [
+            "country"
+          ],
+          "attributeDetails": [
+            {
+              "name": "country",
+              "xsdType": "NMTOKEN",
+              "fixed": "US",
+              "use": "optional"
+            }
+          ],
+          "children": [
+            {
+              "name": "name",
+              "maxOccurs": null,
+              "minOccurs": null,
+              "attributes": [],
+              "attributeDetails": [],
+              "children": [],
+              "xsdType": "string"
+            },
+            {
+              "name": "street",
+              "maxOccurs": null,
+              "minOccurs": null,
+              "attributes": [],
+              "attributeDetails": [],
+              "children": [],
+              "xsdType": "string"
+            },
+            {
+              "name": "city",
+              "maxOccurs": null,
+              "minOccurs": null,
+              "attributes": [],
+              "attributeDetails": [],
+              "children": [],
+              "xsdType": "string"
+            },
+            {
+              "name": "state",
+              "maxOccurs": null,
+              "minOccurs": null,
+              "attributes": [],
+              "attributeDetails": [],
+              "children": [],
+              "xsdType": "string"
+            },
+            {
+              "name": "zip",
+              "maxOccurs": null,
+              "minOccurs": null,
               "attributes": [],
               "attributeDetails": [],
               "children": [],
               "xsdType": "decimal"
             }
           ],
-          "xsdType": null
+          "xsdType": "complexType"
+        },
+        {
+          "name": "billTo",
+          "maxOccurs": null,
+          "minOccurs": null,
+          "attributes": [
+            "country"
+          ],
+          "attributeDetails": [
+            {
+              "name": "country",
+              "xsdType": "NMTOKEN",
+              "fixed": "US",
+              "use": "optional"
+            }
+          ],
+          "children": [
+            {
+              "name": "name",
+              "maxOccurs": null,
+              "minOccurs": null,
+              "attributes": [],
+              "attributeDetails": [],
+              "children": [],
+              "xsdType": "string"
+            },
+            {
+              "name": "street",
+              "maxOccurs": null,
+              "minOccurs": null,
+              "attributes": [],
+              "attributeDetails": [],
+              "children": [],
+              "xsdType": "string"
+            },
+            {
+              "name": "city",
+              "maxOccurs": null,
+              "minOccurs": null,
+              "attributes": [],
+              "attributeDetails": [],
+              "children": [],
+              "xsdType": "string"
+            },
+            {
+              "name": "state",
+              "maxOccurs": null,
+              "minOccurs": null,
+              "attributes": [],
+              "attributeDetails": [],
+              "children": [],
+              "xsdType": "string"
+            },
+            {
+              "name": "zip",
+              "maxOccurs": null,
+              "minOccurs": null,
+              "attributes": [],
+              "attributeDetails": [],
+              "children": [],
+              "xsdType": "decimal"
+            }
+          ],
+          "xsdType": "complexType"
+        },
+        {
+          "name": "comment",
+          "maxOccurs": null,
+          "minOccurs": null,
+          "attributes": [],
+          "attributeDetails": [],
+          "children": [],
+          "xsdType": "string"
+        },
+        {
+          "name": "items",
+          "maxOccurs": null,
+          "minOccurs": null,
+          "attributes": [],
+          "attributeDetails": [],
+          "children": [
+            {
+              "name": "item",
+              "maxOccurs": "unbounded",
+              "minOccurs": "0",
+              "attributes": [
+                "partNum"
+              ],
+              "attributeDetails": [
+                {
+                  "name": "partNum",
+                  "xsdType": "SKU",
+                  "fixed": null,
+                  "use": "optional"
+                }
+              ],
+              "children": [
+                {
+                  "name": "productName",
+                  "maxOccurs": null,
+                  "minOccurs": null,
+                  "attributes": [],
+                  "attributeDetails": [],
+                  "children": [],
+                  "xsdType": "string"
+                },
+                {
+                  "name": "quantity",
+                  "maxOccurs": null,
+                  "minOccurs": null,
+                  "attributes": [],
+                  "attributeDetails": [],
+                  "children": [],
+                  "xsdType": "positiveInteger"
+                },
+                {
+                  "name": "USPrice",
+                  "maxOccurs": null,
+                  "minOccurs": null,
+                  "attributes": [],
+                  "attributeDetails": [],
+                  "children": [],
+                  "xsdType": "decimal"
+                },
+                {
+                  "name": "comment",
+                  "maxOccurs": null,
+                  "minOccurs": null,
+                  "attributes": [],
+                  "attributeDetails": [],
+                  "children": [],
+                  "xsdType": "string"
+                },
+                {
+                  "name": "shipDate",
+                  "maxOccurs": null,
+                  "minOccurs": "0",
+                  "attributes": [],
+                  "attributeDetails": [],
+                  "children": [],
+                  "xsdType": "date"
+                }
+              ],
+              "xsdType": "complexType"
+            },
+            {
+              "name": "productName",
+              "maxOccurs": null,
+              "minOccurs": null,
+              "attributes": [],
+              "attributeDetails": [],
+              "children": [],
+              "xsdType": "string"
+            },
+            {
+              "name": "quantity",
+              "maxOccurs": null,
+              "minOccurs": null,
+              "attributes": [],
+              "attributeDetails": [],
+              "children": [],
+              "xsdType": "positiveInteger"
+            },
+            {
+              "name": "USPrice",
+              "maxOccurs": null,
+              "minOccurs": null,
+              "attributes": [],
+              "attributeDetails": [],
+              "children": [],
+              "xsdType": "decimal"
+            },
+            {
+              "name": "comment",
+              "maxOccurs": null,
+              "minOccurs": null,
+              "attributes": [],
+              "attributeDetails": [],
+              "children": [],
+              "xsdType": "string"
+            },
+            {
+              "name": "shipDate",
+              "maxOccurs": null,
+              "minOccurs": "0",
+              "attributes": [],
+              "attributeDetails": [],
+              "children": [],
+              "xsdType": "date"
+            }
+          ],
+          "xsdType": "complexType"
         }
       ],
-      "xsdType": null
+      "xsdType": "complexType"
     }
-  ]
+  ],
+  "targetNamespace": "http://tempuri.org/PurchaseOrderSchema.xsd",
+  "elementFormDefault": "qualified"
 }

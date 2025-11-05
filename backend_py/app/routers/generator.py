@@ -5,6 +5,8 @@ from typing import Any, Dict, List, Optional, Tuple
 from fastapi import APIRouter
 from pydantic import BaseModel, Field
 from ..utils.storage import read_json, write_json
+from ..agents.sample_data_agent import SampleDataAgent
+from ..core.groq_client import GroqClient
 
 
 router = APIRouter(prefix="/generate", tags=["generate"]) 
@@ -15,6 +17,7 @@ class GenerateRequest(BaseModel):
     count: int = 1
     variation: str | None = None
     schema: Optional[Dict[str, Any]] = None
+    context: Optional[str] = None  # User-provided business context
 
 
 def _fields_from_schema(schema: Optional[Dict[str, Any]]) -> tuple[str, List[str]]:
@@ -100,8 +103,152 @@ def _xml_from_structure(el: Dict[str, Any], idx: int, repeat_count: int) -> List
 @router.post("/sample")
 def generate_sample(req: GenerateRequest):
     fmt = req.format.lower()
-    count = max(1, min(1000, req.count))
+    count = max(1, min(100, req.count))  # Limit to 100 for AI generation
     schema = req.schema or (read_json("last_schema.json") or {})
+    
+    # Use AI-powered sample data generation
+    groq_client = GroqClient()
+    sample_agent = SampleDataAgent(name="sample_data", groq_client=groq_client)
+    
+    # Generate intelligent sample data
+    ai_result = sample_agent.handle({
+        "schema": schema,
+        "count": count,
+        "format": fmt,
+        "context": req.context  # Pass user context to the agent
+    })
+    
+    sample_data = ai_result.get("output", [])
+    
+    if not sample_data:
+        # Fallback to legacy generation if AI fails
+        return _generate_legacy_sample(req, schema)
+    
+    # Convert AI-generated data to requested format
+    if fmt == "table":
+        try:
+            write_json("last_rows.json", sample_data)
+        except Exception:
+            pass
+        return {"format": fmt, "rows": sample_data}
+    
+    elif fmt == "json":
+        try:
+            write_json("last_rows.json", sample_data)
+        except Exception:
+            pass
+        return {"format": fmt, "content": sample_data}
+    
+    elif fmt == "csv":
+        if not sample_data:
+            return {"format": fmt, "content": ""}
+        
+        # Get all unique keys from all records
+        all_keys = set()
+        for record in sample_data:
+            all_keys.update(record.keys())
+        headers = sorted(list(all_keys))
+        
+        lines = [",".join(headers)]
+        for record in sample_data:
+            row = []
+            for header in headers:
+                value = record.get(header, "")
+                # Escape commas and quotes in CSV
+                if isinstance(value, str) and ("," in value or '"' in value):
+                    value = f'"{value.replace('"', '""')}"'
+                row.append(str(value))
+            lines.append(",".join(row))
+        
+        return {"format": fmt, "content": "\n".join(lines)}
+    
+    elif fmt == "xml":
+        return _convert_to_xml(sample_data, schema)
+    
+    else:
+        return {"format": fmt, "content": sample_data}
+
+
+def _convert_to_xml(sample_data: List[Dict[str, Any]], schema: Dict[str, Any]) -> Dict[str, str]:
+    """Convert AI-generated sample data to XML format based on schema structure"""
+    
+    if not sample_data:
+        return {"format": "xml", "content": "<root></root>"}
+    
+    elements = schema.get("elements", [])
+    if not elements:
+        return {"format": "xml", "content": "<root></root>"}
+    
+    root_element = elements[0]
+    root_name = root_element.get("name", "record")
+    
+    xml_lines = []
+    
+    # Check if we need a wrapper element
+    if len(sample_data) > 1:
+        xml_lines.append(f"<{root_name}s>")
+        indent = "  "
+    else:
+        indent = ""
+    
+    for record in sample_data:
+        xml_lines.extend(_record_to_xml(record, root_name, root_element, indent))
+    
+    if len(sample_data) > 1:
+        xml_lines.append(f"</{root_name}s>")
+    
+    return {"format": "xml", "content": "\n".join(xml_lines)}
+
+
+def _record_to_xml(record: Dict[str, Any], element_name: str, element_def: Dict[str, Any], indent: str = "") -> List[str]:
+    """Convert a single record to XML based on element definition"""
+    
+    lines = []
+    
+    # Extract attributes (keys starting with @)
+    attributes = {}
+    content = {}
+    
+    for key, value in record.items():
+        if key.startswith("@"):
+            attributes[key[1:]] = value
+        else:
+            content[key] = value
+    
+    # Build opening tag with attributes
+    attr_str = ""
+    if attributes:
+        attr_parts = [f'{k}="{v}"' for k, v in attributes.items()]
+        attr_str = " " + " ".join(attr_parts)
+    
+    if not content:
+        # Self-closing tag if no content
+        lines.append(f"{indent}<{element_name}{attr_str}/>")
+    else:
+        lines.append(f"{indent}<{element_name}{attr_str}>")
+        
+        # Add content elements
+        for key, value in content.items():
+            if isinstance(value, list):
+                for item in value:
+                    if isinstance(item, dict):
+                        lines.extend(_record_to_xml(item, key, {}, indent + "  "))
+                    else:
+                        lines.append(f"{indent}  <{key}>{item}</{key}>")
+            elif isinstance(value, dict):
+                lines.extend(_record_to_xml(value, key, {}, indent + "  "))
+            else:
+                lines.append(f"{indent}  <{key}>{value}</{key}>")
+        
+        lines.append(f"{indent}</{element_name}>")
+    
+    return lines
+
+
+def _generate_legacy_sample(req: GenerateRequest, schema: Dict[str, Any]) -> Dict[str, Any]:
+    """Legacy sample generation as fallback"""
+    fmt = req.format.lower()
+    count = req.count
     elements = (schema.get("elements") or []) if isinstance(schema, dict) else []
 
     if fmt in ("xml", "json", "csv", "table") and elements:

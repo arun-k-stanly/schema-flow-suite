@@ -1,0 +1,208 @@
+[
+  {
+    "@orderDate": "2025-11-04",
+    "@confirmDate": "2025-11-04",
+    "shipTo": {
+      "@country": "US",
+      "name": "Sarah Anderson",
+      "street": "876 North Clark Street",
+      "city": "Cicero",
+      "state": "IL",
+      "zip": 60637
+    },
+    "billTo": {
+      "@country": "US",
+      "name": "Robert Thomas",
+      "street": "678 North LaSalle Street",
+      "city": "Oak Park",
+      "state": "IL",
+      "zip": 60643
+    },
+    "comment": "Gift wrap requested",
+    "items": {
+      "item": [
+        {
+          "@partNum": "partNum-1",
+          "productName": "Microsoft Surface Laptop Studio",
+          "quantity": 3,
+          "USPrice": 1676.34,
+          "comment": "Gift wrap requested",
+          "shipDate": "2025-11-07"
+        },
+        {
+          "@partNum": "partNum-2",
+          "productName": "Bose QuietComfort Earbuds",
+          "quantity": 3,
+          "USPrice": 219.35,
+          "comment": "Expedite shipping - needed for project",
+          "shipDate": "2025-11-12"
+        }
+      ],
+      "productName": "Bose QuietComfort Earbuds",
+      "quantity": 1,
+      "USPrice": 859.23,
+      "comment": "Rush order - needed by weekend",
+      "shipDate": "2025-11-15"
+    }
+  },
+  {
+    "@orderDate": "2025-10-31",
+    "@confirmDate": "2025-11-04",
+    "shipTo": {
+      "@country": "US",
+      "name": "Jennifer Williams",
+      "street": "1998 West Belmont Avenue",
+      "city": "Cicero",
+      "state": "IL",
+      "zip": 60629
+    },
+    "billTo": {
+      "@country": "US",
+      "name": "Daniel Anderson",
+      "street": "678 North LaSalle Street",
+      "city": "Oak Park",
+      "state": "IL",
+      "zip": 60608
+    },
+    "comment": "Please call before delivery",
+    "items": {
+      "item": [
+        {
+          "@partNum": "partNum-1",
+          "productName": "Apple MacBook Pro 16\" M3 Max",
+          "quantity": 3,
+          "USPrice": 1902.78,
+          "comment": "Please call before delivery",
+          "shipDate": "2025-11-07"
+        }
+      ],
+      "productName": "Nintendo Switch OLED Console",
+      "quantity": 1,
+      "USPrice": 1391.0,
+      "comment": "Handle electronics with care",
+      "shipDate": "2025-11-13"
+    }
+  },
+  {
+    "@orderDate": "2025-10-30",
+    "@confirmDate": "2025-11-02",
+    "shipTo": {
+      "@country": "US",
+      "name": "Jennifer Rodriguez",
+      "street": "1247 North Michigan Avenue",
+      "city": "Elmhurst",
+      "state": "IL",
+      "zip": 60649
+    },
+    "billTo": {
+      "@country": "US",
+      "name": "James Hernandez",
+      "street": "2367 West Armitage Avenue",
+      "city": "Oak Park",
+      "state": "IL",
+      "zip": 60610
+    },
+    "comment": "Please call before delivery",
+    "items": {
+      "item": [
+        {
+          "@partNum": "partNum-1",
+          "productName": "AirPods Pro 2nd Generation",
+          "quantity": 3,
+          "USPrice": 1548.56,
+          "comment": "Rush order - needed by weekend",
+          "shipDate": "2025-11-12"
+        }
+      ],
+      "productName": "Canon EOS R6 Mark II Camera",
+      "quantity": 2,
+      "USPrice": 1507.31,
+      "comment": "Fragile - electronics inside",
+      "shipDate": "2025-11-15"
+    }
+  },
+  {
+    "@orderDate": "2025-11-05",
+    "@confirmDate": "2025-10-29",
+    "shipTo": {
+      "@country": "US",
+      "name": "Jennifer Anderson",
+      "street": "789 South State Street",
+      "city": "Evanston",
+      "state": "IL",
+      "zip": 60615
+    },
+    "billTo": {
+      "@country": "US",
+      "name": "David Brown",
+      "street": "2367 West Armitage Avenue",
+      "city": "Skokie",
+      "state": "IL",
+      "zip": 60609
+    },
+    "comment": "Gift wrap requested",
+    "items": {
+      "item": [
+        {
+          "@partNum": "partNum-1",
+          "productName": "Nintendo Switch OLED Console",
+          "quantity": 3,
+          "USPrice": 1570.32,
+          "comment": "Handle electronics with care",
+          "shipDate": "2025-11-15"
+        },
+        {
+          "@partNum": "partNum-2",
+          "productName": "Samsung Galaxy S24 Ultra 256GB",
+          "quantity": 2,
+          "USPrice": 1003.65,
+          "comment": "Rush order - needed by weekend",
+          "shipDate": "2025-11-07"
+        }
+      ],
+      "productName": "Microsoft Surface Laptop Studio",
+      "quantity": 2,
+      "USPrice": 1710.46,
+      "comment": "Please call before delivery",
+      "shipDate": "2025-11-09"
+    }
+  },
+  {
+    "@orderDate": "2025-10-31",
+    "@confirmDate": "2025-10-31",
+    "shipTo": {
+      "@country": "US",
+      "name": "Jennifer Hernandez",
+      "street": "123 East Wacker Drive",
+      "city": "Elmhurst",
+      "state": "IL",
+      "zip": 60639
+    },
+    "billTo": {
+      "@country": "US",
+      "name": "Anthony Garcia",
+      "street": "1523 West Fullerton Avenue",
+      "city": "Des Plaines",
+      "state": "IL",
+      "zip": 60642
+    },
+    "comment": "Fragile - electronics inside",
+    "items": {
+      "item": [
+        {
+          "@partNum": "partNum-1",
+          "productName": "Logitech MX Master 3S Wireless Mouse",
+          "quantity": 1,
+          "USPrice": 1836.83,
+          "comment": "Rush order - needed by weekend",
+          "shipDate": "2025-11-08"
+        }
+      ],
+      "productName": "Bose QuietComfort Earbuds",
+      "quantity": 3,
+      "USPrice": 833.55,
+      "comment": "Fragile - electronics inside",
+      "shipDate": "2025-11-13"
+    }
+  }
+]

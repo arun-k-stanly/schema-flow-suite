@@ -1,0 +1,17 @@
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import col, expr, monotonically_increasing_id
+
+spark = SparkSession.builder.appName("SchemaFlowETL").getOrCreate()
+
+reader = spark.read
+# Read flattened source rows (generated from your schema)
+input_df = reader.json('input.json')
+
+dim_comprehensive_df = input_df.select(col('comprehensive_id').alias('comprehensive_id'), col('billTo_name').alias('billTo_name'), col('name').alias('name'), col('USAddress_city').alias('USAddress_city'), col('Items_productName').alias('Items_productName'), col('zip').alias('zip'), col('purchaseOrder_billTo').alias('purchaseOrder_billTo'), col('item').alias('item'), col('city').alias('city'), col('PurchaseOrderType_items').alias('PurchaseOrderType_items'), col('PurchaseOrderType_comment').alias('PurchaseOrderType_comment'), col('PurchaseOrderType_billTo').alias('PurchaseOrderType_billTo'), col('state').alias('state'), col('PurchaseOrderType').alias('PurchaseOrderType'), col('shipTo_zip').alias('shipTo_zip'), col('productName').alias('productName'), col('purchaseOrder_country').alias('purchaseOrder_country'), col('item_comment').alias('item_comment'), col('USAddress').alias('USAddress'), col('item_productName').alias('item_productName'), col('USAddress_zip').alias('USAddress_zip'), col('items_partNum').alias('items_partNum'), col('shipTo').alias('shipTo'), col('billTo_street').alias('billTo_street'), col('billTo_state').alias('billTo_state'), col('items').alias('items'), col('USAddress_street').alias('USAddress_street'), col('shipTo_city').alias('shipTo_city'), col('purchaseOrder_items').alias('purchaseOrder_items'), col('purchaseOrder').alias('purchaseOrder'), col('Items').alias('Items'), col('purchaseOrder_shipTo').alias('purchaseOrder_shipTo'), col('PurchaseOrderType_shipTo').alias('PurchaseOrderType_shipTo'), col('shipTo_street').alias('shipTo_street'), col('items_item').alias('items_item'), col('USAddress_name').alias('USAddress_name'), col('Items_item').alias('Items_item'), col('street').alias('street'), col('items_comment').alias('items_comment'), col('Items_comment').alias('Items_comment'), col('billTo_zip').alias('billTo_zip'), col('items_productName').alias('items_productName'), col('billTo').alias('billTo'), col('PurchaseOrderType_country').alias('PurchaseOrderType_country'), col('billTo_city').alias('billTo_city'), col('purchaseOrder_comment').alias('purchaseOrder_comment'), col('USAddress_state').alias('USAddress_state'), col('Items_partNum').alias('Items_partNum'), col('shipTo_state').alias('shipTo_state'), col('country').alias('country'), col('shipTo_name').alias('shipTo_name'))
+dim_comprehensive_df = dim_comprehensive_df.dropDuplicates(['comprehensive_id'])
+dim_comprehensive_df.write.mode('overwrite').parquet('dim_comprehensive')
+
+fact_df = input_df.select(col('comment_id').alias('comment_id'), col('comment').alias('comment'), col('Items_quantity').alias('Items_quantity'), col('item_quantity').alias('item_quantity'), col('orderDate').alias('orderDate'), col('items_USPrice').alias('items_USPrice'), col('confirmDate').alias('confirmDate'), col('Items_USPrice').alias('Items_USPrice'), col('Items_shipDate').alias('Items_shipDate'), col('item_shipDate').alias('item_shipDate'), col('shipDate').alias('shipDate'), col('items_shipDate').alias('items_shipDate'), col('item_USPrice').alias('item_USPrice'), col('items_quantity').alias('items_quantity'), col('USPrice').alias('USPrice'), col('quantity').alias('quantity'))
+fact_df.write.mode('overwrite').parquet('fact_comment')
+
+print('ETL completed')

@@ -127,14 +127,8 @@ export default function DeployPipeline() {
               <div className="text-sm text-muted-foreground">No endpoints or status to show.</div>
             </div>
 
-            <div className="flex gap-2">
-              <Button variant="outline" className="flex-1">
-                View Logs
-              </Button>
-              <Button variant="outline" className="flex-1">
-                Monitor Pipeline
-              </Button>
-              <Button className="flex-1" onClick={() => navigate(`/project/${projectId}`)}>
+            <div className="flex justify-center">
+              <Button className="px-8" onClick={() => navigate(`/project/${projectId}`)}>
                 Go to Project Pipelines
               </Button>
             </div>

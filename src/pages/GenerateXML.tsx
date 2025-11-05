@@ -12,6 +12,8 @@ export default function GenerateXML() {
   const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
   const [format, setFormat] = useState<"xml" | "json" | "csv" | "table">("xml");
+  const [context, setContext] = useState(""); // Add context state
+  const [count, setCount] = useState(5); // Add count state
 
   const [tableRows, setTableRows] = useState<any[]>([]);
 
@@ -20,7 +22,13 @@ export default function GenerateXML() {
     try {
       let schema: any = null;
       try { schema = JSON.parse(localStorage.getItem('schemaPreview') || 'null'); } catch {}
-      const res = await apiGenerateSample({ format, count: 5, variation: 'low', schema });
+      const res = await apiGenerateSample({ 
+        format, 
+        count, 
+        variation: 'low', 
+        schema,
+        context // Pass context to the API
+      });
       if (format === 'table') {
         setTableRows(Array.isArray(res.rows) ? res.rows : []);
         setXmlContent("");
@@ -93,8 +101,19 @@ export default function GenerateXML() {
               <label className="text-sm font-medium">Number of Records</label>
               <input
                 type="number"
-                defaultValue={5}
+                value={count}
+                onChange={(e) => setCount(parseInt(e.target.value) || 5)}
                 className="w-full px-3 py-2 bg-muted rounded-lg border border-border"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Business Context (Optional)</label>
+              <Textarea
+                value={context}
+                onChange={(e) => setContext(e.target.value)}
+                placeholder="Describe the business scenario for realistic data generation (e.g., 'Retail electronics store in Chicago, generate customer orders for laptops and phones')"
+                className="min-h-[100px]"
               />
             </div>
             

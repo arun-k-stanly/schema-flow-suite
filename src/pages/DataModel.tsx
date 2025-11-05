@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Database, GitBranch, Table } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 import DataModelDiagram, { StarSchemaModel } from "@/components/DataModelDiagram";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
@@ -20,6 +22,7 @@ export default function DataModel() {
   const [backendModel, setBackendModel] = useState<any | null>(null);
 
   const [prompt, setPrompt] = useState("");
+  const [schemaType, setSchemaType] = useState("auto");
   const [factTableState, setFactTableState] = useState<any>(emptyFact);
   const [dimensionTablesState, setDimensionTablesState] = useState<any[]>(emptyDimensions);
   const [hasGenerated, setHasGenerated] = useState<boolean>(false);
@@ -195,14 +198,14 @@ export default function DataModel() {
       try { sampleRows = JSON.parse(localStorage.getItem('sampleRows') || 'null') || undefined; } catch {}
       let schema: any | undefined = undefined;
       try { schema = JSON.parse(localStorage.getItem('schemaPreview') || 'null') || undefined; } catch {}
-      const res = await apiGenerateModel({ prompt, sampleRows, schema });
+      const res = await apiGenerateModel({ prompt, sampleRows, schema, schemaType });
       if (res?.model) {
         setBackendModel(res.model);
         setFactTableState(res.model.fact as any);
         setDimensionTablesState((res.model.dimensions || []) as any);
       }
       setHasGenerated(true);
-      toast({ title: "Model generated", description: "Backend created a model from schema" });
+      toast({ title: "Model generated", description: `${res.model.schema_type.charAt(0).toUpperCase() + res.model.schema_type.slice(1)} schema model created successfully` });
     } catch (e: any) {
       toast({ title: "Model error", description: e.message, variant: "destructive" });
     }
@@ -226,13 +229,37 @@ export default function DataModel() {
       <Card className="shadow-card border-border">
         <CardHeader>
           <CardTitle>Generate from Prompt</CardTitle>
-          <CardDescription>Describe your domain (e.g., "ecommerce orders", "healthcare patient visits").</CardDescription>
+          <CardDescription>Describe your domain and choose the schema type for your data model.</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="schema-type">Schema Type</Label>
+            <Select value={schemaType} onValueChange={setSchemaType}>
+              <SelectTrigger id="schema-type">
+                <SelectValue placeholder="Choose schema type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="auto">Auto-detect (Recommended)</SelectItem>
+                <SelectItem value="star">Star Schema</SelectItem>
+                <SelectItem value="snowflake">Snowflake Schema</SelectItem>
+                <SelectItem value="galaxy">Galaxy Schema</SelectItem>
+                <SelectItem value="wide_table">Wide Table</SelectItem>
+                <SelectItem value="data_vault">Data Vault</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-sm text-muted-foreground">
+              {schemaType === "auto" && "System will automatically choose the best schema type based on your data complexity."}
+              {schemaType === "star" && "Central fact table surrounded by dimension tables. Best for simple analytics."}
+              {schemaType === "snowflake" && "Normalized dimensions with hierarchical structure. Good for complex reporting."}
+              {schemaType === "galaxy" && "Multiple fact tables sharing dimensions. Ideal for enterprise data warehouses."}
+              {schemaType === "wide_table" && "Denormalized table with all data. Simple but less flexible."}
+              {schemaType === "data_vault" && "Hub-Link-Satellite model. Best for enterprise data warehousing with auditability."}
+            </p>
+          </div>
           <Textarea
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
-            placeholder="Type a prompt to generate a star schema..."
+            placeholder="Type a prompt to generate a data model (e.g., 'Create analytics schema for e-commerce orders')..."
             className="min-h-[100px]"
           />
           <div className="flex justify-end">
